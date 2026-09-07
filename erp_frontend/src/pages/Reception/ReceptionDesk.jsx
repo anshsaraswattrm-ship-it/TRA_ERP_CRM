@@ -32,7 +32,9 @@ export default function ReceptionDesk() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${userInfo?.token}`
           },
-          body: JSON.stringify({ qrData: scannedData })
+          body: JSON.stringify({ qrData: scannedData, 
+            token: scannedData, 
+            qrCode: scannedData })
         });
         
         const data = await response.json();
