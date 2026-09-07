@@ -199,9 +199,6 @@ export default function Attendance() {
     }
   };
 
-  // --------------------------------------------------------
-  // FIXED: REAL CAMERA QR VERIFICATION FOR CLOCK IN
-  // --------------------------------------------------------
   const handleQRScanInActual = async (scannedToken) => {
     setIsScanningQRIn(false);
     setAuthStep(3);
@@ -232,9 +229,6 @@ export default function Attendance() {
     }
   };
 
-  // --------------------------------------------------------
-  // FIXED: REAL CAMERA QR VERIFICATION FOR CLOCK OUT
-  // --------------------------------------------------------
   const handleQRScanOutActual = async (scannedToken) => {
     setIsScanningQROut(false);
     setClockOutStep(1); 
@@ -372,8 +366,9 @@ export default function Attendance() {
 
                       {clockOutStep === 0 && isScanningQROut && (
                         <div className="w-full rounded-lg overflow-hidden border-2 border-[#084e8d] mt-2 shadow-inner">
+                          {/* UPDATED TO onScan */}
                           <Scanner 
-                            onResult={(text) => handleQRScanOutActual(text)} 
+                            onScan={(text) => handleQRScanOutActual(text)} 
                             onError={(error) => console.log(error?.message)} 
                           />
                           <button onClick={() => setIsScanningQROut(false)} className="w-full py-2 bg-red-500 hover:bg-red-600 transition-colors text-white text-xs font-bold">Cancel Scanner</button>
@@ -439,8 +434,9 @@ export default function Attendance() {
 
                     {authStep === 2 && isScanningQRIn && (
                       <div className="w-full rounded-lg overflow-hidden border-2 border-[#084e8d] mt-2 shadow-inner">
+                        {/* UPDATED TO onScan */}
                         <Scanner 
-                          onResult={(text) => handleQRScanInActual(text)} 
+                          onScan={(text) => handleQRScanInActual(text)} 
                           onError={(error) => console.log(error?.message)} 
                         />
                         <button onClick={() => setIsScanningQRIn(false)} className="w-full py-2 bg-red-500 hover:bg-red-600 transition-colors text-white text-xs font-bold">Cancel Scanner</button>
