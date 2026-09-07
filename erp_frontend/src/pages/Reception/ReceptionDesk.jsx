@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Monitor, ShieldCheck, RefreshCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function ReceptionDesk() {
   const [qrData, setQrData] = useState('');
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-  
-  const scannedString = useRef('');
 
   const fetchQR = async () => {
     try {
@@ -22,56 +20,10 @@ export default function ReceptionDesk() {
     }
   };
 
-  const handleScan = async (scannedData) => {
-    if (scannedData) {
-      console.log("🔍 Scanned QR Raw Data:", scannedData);
-      try {
-        const response = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userInfo?.token}`
-          },
-          body: JSON.stringify({ qrData: scannedData, 
-            token: scannedData, 
-            qrCode: scannedData })
-        });
-        
-        const data = await response.json();
-        console.log("✅ Backend Response Data:", data);
-        
-        if(response.ok) {
-          console.log("🎉 Attendance Marked Successfully!");
-        } else {
-          console.error("⚠️ Backend Error Message:", data.message || data.error || data);
-        }
-
-      } catch (error) {
-        console.error("❌ API Error:", error);
-      }
-    }
-  };
-
   useEffect(() => {
     fetchQR();
     const interval = setInterval(fetchQR, 15000);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter') {
-        if (scannedString.current.length > 5) {
-          handleScan(scannedString.current);
-        }
-        scannedString.current = '';
-      } else if (e.key.length === 1) {
-        scannedString.current += e.key;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -96,21 +48,12 @@ export default function ReceptionDesk() {
           </span>
         </div>
 
-        <div className="flex justify-between items-center w-full px-4">
-          <button 
-            onClick={fetchQR}
-            className="text-xs font-bold text-slate-500 hover:text-[#084e8d] flex items-center transition-colors"
-          >
-            <RefreshCw size={14} className="mr-1.5" /> Refresh Terminal
-          </button>
-          
-          <button 
-            onClick={() => handleScan(qrData)}
-            className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded hover:bg-amber-100 transition-colors"
-          >
-            TEST SCAN (F12)
-          </button>
-        </div>
+        <button 
+          onClick={fetchQR}
+          className="text-xs font-bold text-slate-500 hover:text-[#084e8d] flex items-center justify-center mx-auto transition-colors"
+        >
+          <RefreshCw size={14} className="mr-1.5" /> Refresh Terminal Token
+        </button>
       </div>
     </div>
   );

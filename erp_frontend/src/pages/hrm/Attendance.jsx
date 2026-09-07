@@ -208,11 +208,8 @@ export default function Attendance() {
       const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ 
-          qrData: actualToken,
-          token: actualToken,
-          qrCode: actualToken
-        })
+        // PERFECT MATCH FOR BACKEND
+        body: JSON.stringify({ qrToken: actualToken })
       });
       const data = await res.json();
 
@@ -238,11 +235,8 @@ export default function Attendance() {
       const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ 
-          qrData: actualToken,
-          token: actualToken,
-          qrCode: actualToken
-        })
+        // PERFECT MATCH FOR BACKEND
+        body: JSON.stringify({ qrToken: actualToken })
       });
       const data = await res.json();
 
@@ -366,7 +360,6 @@ export default function Attendance() {
 
                       {clockOutStep === 0 && isScanningQROut && (
                         <div className="w-full rounded-lg overflow-hidden border-2 border-[#084e8d] mt-2 shadow-inner">
-                          {/* UPDATED TO onScan */}
                           <Scanner 
                             onScan={(text) => handleQRScanOutActual(text)} 
                             onError={(error) => console.log(error?.message)} 
@@ -434,7 +427,6 @@ export default function Attendance() {
 
                     {authStep === 2 && isScanningQRIn && (
                       <div className="w-full rounded-lg overflow-hidden border-2 border-[#084e8d] mt-2 shadow-inner">
-                        {/* UPDATED TO onScan */}
                         <Scanner 
                           onScan={(text) => handleQRScanInActual(text)} 
                           onError={(error) => console.log(error?.message)} 
