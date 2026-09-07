@@ -1,47 +1,39 @@
 import { useState, useEffect, useRef } from 'react';
 import { Camera, QrCode, CheckCircle2, Clock, Search, CalendarDays, User, ShieldCheck, LogOut, Loader2, X } from 'lucide-react';
 import * as faceapi from 'face-api.js';
-import { Scanner } from '@yudiel/react-qr-scanner'; // <-- REAL SCANNER IMPORTED
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 export default function Attendance() {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   const userRole = userInfo?.role || 'BDE LEVEL1';
   
-  // Specific Role Checks
   const isSuperAdmin = userRole === 'Super Admin';
   const isFounder = userRole === 'Founder and Director';
   const isEmployee = !isSuperAdmin && !isFounder;
 
-  // Set default view: Admins/Founders see 'admin', Employees see 'employee'
   const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder) ? 'admin' : 'employee');
 
-  // --- API & DATA STATES ---
   const [myLogs, setMyLogs] = useState([]);
   const [allEmployeesLogs, setAllEmployeesLogs] = useState([]);
   const [apiLoading, setApiLoading] = useState(false);
 
-  // --- EMPLOYEE STATE ---
   const [authStep, setAuthStep] = useState(0); 
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [clockOutStep, setClockOutStep] = useState(0);
 
-  // --- QR SCANNER STATES (NEW) ---
   const [isScanningQRIn, setIsScanningQRIn] = useState(false);
   const [isScanningQROut, setIsScanningQROut] = useState(false);
 
-  // --- CAMERA & FACE API STATES ---
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraLoading, setCameraLoading] = useState(false);
   const [faceStatusMsg, setFaceStatusMsg] = useState('');
   const videoRef = useRef(null);
   const [modelsLoaded, setModelsLoaded] = useState(false);
 
-  // --- ADMIN STATE ---
   const [adminSearch, setAdminSearch] = useState('');
   const [availableDates, setAvailableDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
 
-  // Setup Dates on Load & Load Face API Models
   useEffect(() => {
     const dates = [];
     for (let i = 0; i < 5; i++) {
@@ -208,21 +200,27 @@ export default function Attendance() {
   };
 
   // --------------------------------------------------------
-  // REAL CAMERA QR VERIFICATION FOR CLOCK IN
+  // FIXED: REAL CAMERA QR VERIFICATION FOR CLOCK IN
   // --------------------------------------------------------
   const handleQRScanInActual = async (scannedToken) => {
     setIsScanningQRIn(false);
-    setAuthStep(3); // Show spinner
+    setAuthStep(3);
     try {
+      const actualToken = Array.isArray(scannedToken) ? scannedToken[0]?.rawValue : scannedToken;
+      
       const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ qrToken: scannedToken })
+        body: JSON.stringify({ 
+          qrData: actualToken,
+          token: actualToken,
+          qrCode: actualToken
+        })
       });
       const data = await res.json();
 
       if (res.ok) {
-        setAuthStep(4); // Success, move to Mark Attendance
+        setAuthStep(4);
       } else {
         alert(data.message || 'QR Verification failed');
         setAuthStep(2); 
@@ -235,21 +233,27 @@ export default function Attendance() {
   };
 
   // --------------------------------------------------------
-  // REAL CAMERA QR VERIFICATION FOR CLOCK OUT
+  // FIXED: REAL CAMERA QR VERIFICATION FOR CLOCK OUT
   // --------------------------------------------------------
   const handleQRScanOutActual = async (scannedToken) => {
     setIsScanningQROut(false);
-    setClockOutStep(1); // Show spinner
+    setClockOutStep(1); 
     try {
+      const actualToken = Array.isArray(scannedToken) ? scannedToken[0]?.rawValue : scannedToken;
+
       const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ qrToken: scannedToken })
+        body: JSON.stringify({ 
+          qrData: actualToken,
+          token: actualToken,
+          qrCode: actualToken
+        })
       });
       const data = await res.json();
 
       if (res.ok) {
-        setClockOutStep(2); // Success, enable Clock-Out button
+        setClockOutStep(2);
       } else {
         alert(data.message || 'QR Verification failed');
         setClockOutStep(0); 
@@ -360,7 +364,6 @@ export default function Attendance() {
                         {clockOutStep >= 2 && <CheckCircle2 className="text-green-500" size={18} />}
                       </div>
 
-                      {/* --- REAL QR SCANNER UI FOR CLOCK OUT --- */}
                       {clockOutStep === 0 && !isScanningQROut && (
                         <button onClick={() => setIsScanningQROut(true)} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
                           <QrCode className="mr-2" size={16} /> Open Camera to Scan Out
@@ -428,7 +431,6 @@ export default function Attendance() {
                       {authStep >= 4 && <CheckCircle2 className="text-green-500" size={20} />}
                     </div>
 
-                    {/* --- REAL QR SCANNER UI FOR CLOCK IN --- */}
                     {authStep === 2 && !isScanningQRIn && (
                       <button onClick={() => setIsScanningQRIn(true)} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
                         <QrCode className="mr-2" size={18} /> Open Camera to Scan
