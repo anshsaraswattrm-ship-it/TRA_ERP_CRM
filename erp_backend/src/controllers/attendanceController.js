@@ -1,14 +1,24 @@
 const Attendance = require('../models/Attendance');
 const jwt = require('jsonwebtoken'); // JWT add kiya for dynamic expiration
 
-// Helper to get current formatted date (e.g., "24 Aug 2026")
+// Helper to get current formatted date strictly in IST (e.g., "24 Aug 2026")
 const getFormattedDate = () => {
-  return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date().toLocaleDateString('en-GB', { 
+    timeZone: 'Asia/Kolkata',
+    day: '2-digit', 
+    month: 'short', 
+    year: 'numeric' 
+  });
 };
 
-// Helper to get current time (e.g., "09:30 AM")
+// Helper to get current time strictly in IST (e.g., "09:30 AM")
 const getCurrentTime = () => {
-  return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return new Date().toLocaleTimeString('en-US', { 
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: true 
+  });
 };
 
 // @desc    Mark Clock-In Attendance
@@ -26,9 +36,13 @@ const clockIn = async (req, res) => {
     }
 
     const currentTime = getCurrentTime();
-    // Logic: If past 10:00 AM, mark as 'Late', else 'Present'
-    const now = new Date();
-    const status = (now.getHours() > 10 || (now.getHours() === 10 && now.getMinutes() > 0)) ? 'Late' : 'Present';
+    
+    // Logic: Convert server time to IST to check if past 10:00 AM
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const currentHour = nowIST.getHours();
+    const currentMinute = nowIST.getMinutes();
+    
+    const status = (currentHour > 10 || (currentHour === 10 && currentMinute > 0)) ? 'Late' : 'Present';
 
     let attendance = existingAttendance;
     if (attendance) {
