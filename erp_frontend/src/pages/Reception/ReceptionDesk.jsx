@@ -24,14 +24,14 @@ export default function ReceptionDesk() {
   };
 
   // -------------------------------------------------------------
-  // DEBUGGING SNIPPET: Handle Scan
+  // FIXED: Handle Scan with Correct Endpoint (/verify-qr)
   // -------------------------------------------------------------
   const handleScan = async (scannedData) => {
     if (scannedData) {
       console.log("🔍 Scanned QR Raw Data:", scannedData);
       try {
-        // Backend API Hit
-        const response = await fetch('https://tra-erp-crm.onrender.com/api/attendance/reception-qr', {
+        // Backend API Hit to correct verify-qr endpoint
+        const response = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -66,13 +66,12 @@ export default function ReceptionDesk() {
   // -------------------------------------------------------------
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Physical scanner jaldi-jaldi keys type karta hai aur end mein 'Enter' dabata hai
       if (e.key === 'Enter') {
-        if (scannedString.current.length > 5) { // Ensure it's a valid QR string length
+        if (scannedString.current.length > 5) {
           handleScan(scannedString.current);
         }
-        scannedString.current = ''; // Reset for next scan
-      } else if (e.key.length === 1) { // Normal alphanumeric characters
+        scannedString.current = '';
+      } else if (e.key.length === 1) {
         scannedString.current += e.key;
       }
     };
@@ -111,7 +110,6 @@ export default function ReceptionDesk() {
             <RefreshCw size={14} className="mr-1.5" /> Refresh Terminal
           </button>
           
-          {/* Debugging Button - F12 check karne ke liye manual trigger */}
           <button 
             onClick={() => handleScan(qrData)}
             className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded hover:bg-amber-100 transition-colors"
