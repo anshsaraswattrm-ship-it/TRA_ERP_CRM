@@ -1,17 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './components/layout/MainLayout';
+import MainLayout from './components/layout/Mainlayout';
 
 // Auth Pages
-import Login from './pages/auth/Login';
+import Login from './pages/auth/login';
 
 // Dashboard
-import Dashboard from './pages/dashboard/Dashboard';
+import Dashboard from './pages/dashboard/dashboard';
 
 // Admin Modules
 import TargetSetup from './pages/admin/TargetSetup';
 import UserAccounts from './pages/admin/UserAccounts';
 import ITFaceRegistration from './pages/admin/ITFaceRegistration';
-import ReceptionDesk from './pages/reception/ReceptionDesk'; // <-- Reception Desk Import
+import ReceptionDesk from './pages/Reception/ReceptionDesk'; // <-- Reception Desk Import
 
 // HRM Modules
 import LeaveCenter from './pages/hrm/LeaveCenter';
