@@ -57,5 +57,6 @@ export default function ReceptionDesk() {
         </button>
       </div>
     </div>
+    
   );
 }
