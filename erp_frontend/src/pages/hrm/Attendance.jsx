@@ -74,7 +74,7 @@ export default function Attendance() {
 
   const fetchMyLogs = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/my-logs', { headers: getAuthHeaders() });
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/my-logs', { headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
         setMyLogs(data);
@@ -95,7 +95,7 @@ export default function Attendance() {
 
   const fetchAdminLogs = async (date) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/attendance/admin-logs?date=${date}`, { headers: getAuthHeaders() });
+      const res = await fetch(`https://tra-erp-crm.onrender.com/api/attendance/admin-logs?date=${date}`, { headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
         setAllEmployeesLogs(data);
@@ -162,7 +162,7 @@ export default function Attendance() {
     setFaceStatusMsg('Scanning and verifying face...');
 
     try {
-      const profileRes = await fetch('http://localhost:5000/api/auth/profile', { headers: getAuthHeaders() });
+      const profileRes = await fetch('https://tra-erp-crm.onrender.com/api/auth/profile', { headers: getAuthHeaders() });
       const profileData = await profileRes.json();
       
       if (!profileData.faceDescriptor || profileData.faceDescriptor.length === 0) {
@@ -214,7 +214,7 @@ export default function Attendance() {
     setIsScanningQRIn(false);
     setAuthStep(3); // Show spinner
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/verify-qr', {
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ qrToken: scannedToken })
@@ -241,7 +241,7 @@ export default function Attendance() {
     setIsScanningQROut(false);
     setClockOutStep(1); // Show spinner
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/verify-qr', {
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ qrToken: scannedToken })
@@ -264,7 +264,7 @@ export default function Attendance() {
   const handleClockIn = async () => {
     setApiLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/clock-in', {
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/clock-in', {
         method: 'POST',
         headers: getAuthHeaders()
       });
@@ -288,7 +288,7 @@ export default function Attendance() {
   const handleClockOut = async () => {
     setApiLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/clock-out', {
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/clock-out', {
         method: 'POST',
         headers: getAuthHeaders()
       });

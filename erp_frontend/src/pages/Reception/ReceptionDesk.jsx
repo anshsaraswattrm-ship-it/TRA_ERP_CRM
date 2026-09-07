@@ -8,7 +8,7 @@ export default function ReceptionDesk() {
 
   const fetchQR = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/attendance/reception-qr', {
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/reception-qr', {
         headers: { Authorization: `Bearer ${userInfo?.token}` }
       });
       const data = await res.json();

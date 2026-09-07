@@ -33,7 +33,7 @@ export default function UserAccounts() {
   const fetchUsers = async () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const response = await fetch('http://localhost:5000/api/auth/users', {
+      const response = await fetch('https://tra-erp-crm.onrender.com/api/auth/users', {
         headers: { Authorization: `Bearer ${userInfo?.token}` }
       });
       const data = await response.json();
@@ -73,7 +73,7 @@ export default function UserAccounts() {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
       const payload = { employeeId: generatedId, name, email, password, role };
-      const response = await fetch('http://localhost:5000/api/auth/create-employee', {
+      const response = await fetch('https://tra-erp-crm.onrender.com/api/auth/create-employee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo?.token}` },
         body: JSON.stringify(payload),
@@ -117,7 +117,7 @@ export default function UserAccounts() {
       
       if (editPassword) payload.password = editPassword;
 
-      const response = await fetch(`http://localhost:5000/api/auth/users/${editModal.user._id}`, {
+      const response = await fetch(`https://tra-erp-crm.onrender.com/api/auth/users/${editModal.user._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export default function UserAccounts() {
     showPopup('confirm', `Are you sure you want to revoke access for ${employeeId}?`, async () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        const response = await fetch(`http://localhost:5000/api/auth/users/${dbId}`, {
+        const response = await fetch(`https://tra-erp-crm.onrender.com/api/auth/users/${dbId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${userInfo?.token}` }
         });

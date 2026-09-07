@@ -64,7 +64,7 @@ export default function FaceEnrollment() {
       // Send to Backend
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
       console.log("Current User Token:", userInfo?.token);
-      const response = await fetch('http://localhost:5000/api/auth/enroll-face', {
+      const response = await fetch('https://tra-erp-crm.onrender.com/api/auth/enroll-face', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

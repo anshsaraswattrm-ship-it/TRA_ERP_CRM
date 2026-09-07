@@ -22,7 +22,7 @@ export default function ITFaceRegistration() {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
-        const res = await fetch('http://localhost:5000/api/auth/users', {
+        const res = await fetch('https://tra-erp-crm.onrender.com/api/auth/users', {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo?.token}` }
         });
         if (res.ok) {
@@ -111,7 +111,7 @@ export default function ITFaceRegistration() {
       const descriptorArray = Array.from(detection.descriptor);
 
       // Send to Admin enrollment route
-      const res = await fetch('http://localhost:5000/api/auth/admin-enroll-face', {
+      const res = await fetch('https://tra-erp-crm.onrender.com/api/auth/admin-enroll-face', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
