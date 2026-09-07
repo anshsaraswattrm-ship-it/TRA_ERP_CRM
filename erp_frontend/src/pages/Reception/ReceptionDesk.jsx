@@ -6,7 +6,6 @@ export default function ReceptionDesk() {
   const [qrData, setQrData] = useState('');
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   
-  // Physical scanner capture karne ke liye ref
   const scannedString = useRef('');
 
   const fetchQR = async () => {
@@ -23,14 +22,10 @@ export default function ReceptionDesk() {
     }
   };
 
-  // -------------------------------------------------------------
-  // FIXED: Handle Scan with Correct Endpoint (/verify-qr)
-  // -------------------------------------------------------------
   const handleScan = async (scannedData) => {
     if (scannedData) {
       console.log("🔍 Scanned QR Raw Data:", scannedData);
       try {
-        // Backend API Hit to correct verify-qr endpoint
         const response = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
           method: 'POST',
           headers: {
@@ -46,7 +41,7 @@ export default function ReceptionDesk() {
         if(response.ok) {
           console.log("🎉 Attendance Marked Successfully!");
         } else {
-          console.error("⚠️ Backend returned an error:", data);
+          console.error("⚠️ Backend Error Message:", data.message || data.error || data);
         }
 
       } catch (error) {
@@ -61,9 +56,6 @@ export default function ReceptionDesk() {
     return () => clearInterval(interval);
   }, []);
 
-  // -------------------------------------------------------------
-  // PHYSICAL SCANNER LISTENER (Jo 'beep' par trigger hoga)
-  // -------------------------------------------------------------
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Enter') {
