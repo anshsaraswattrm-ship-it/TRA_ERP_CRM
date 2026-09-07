@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Monitor, ShieldCheck, RefreshCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function ReceptionDesk() {
-  const [qrData, setQrData] = useState(''); // Starts empty until fetched
+  const [qrData, setQrData] = useState('');
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  
+  // Physical scanner capture karne ke liye ref
+  const scannedString = useRef('');
 
   const fetchQR = async () => {
     try {
@@ -20,10 +23,62 @@ export default function ReceptionDesk() {
     }
   };
 
+  // -------------------------------------------------------------
+  // DEBUGGING SNIPPET: Handle Scan
+  // -------------------------------------------------------------
+  const handleScan = async (scannedData) => {
+    if (scannedData) {
+      console.log("🔍 Scanned QR Raw Data:", scannedData);
+      try {
+        // Backend API Hit
+        const response = await fetch('https://tra-erp-crm.onrender.com/api/attendance/reception-qr', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userInfo?.token}`
+          },
+          body: JSON.stringify({ qrData: scannedData })
+        });
+        
+        const data = await response.json();
+        console.log("✅ Backend Response Data:", data);
+        
+        if(response.ok) {
+          console.log("🎉 Attendance Marked Successfully!");
+        } else {
+          console.error("⚠️ Backend returned an error:", data);
+        }
+
+      } catch (error) {
+        console.error("❌ API Error:", error);
+      }
+    }
+  };
+
   useEffect(() => {
-    fetchQR(); // Fetch immediately on load
-    const interval = setInterval(fetchQR, 15000); // Auto-refresh exactly every 15 seconds
+    fetchQR();
+    const interval = setInterval(fetchQR, 15000);
     return () => clearInterval(interval);
+  }, []);
+
+  // -------------------------------------------------------------
+  // PHYSICAL SCANNER LISTENER (Jo 'beep' par trigger hoga)
+  // -------------------------------------------------------------
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Physical scanner jaldi-jaldi keys type karta hai aur end mein 'Enter' dabata hai
+      if (e.key === 'Enter') {
+        if (scannedString.current.length > 5) { // Ensure it's a valid QR string length
+          handleScan(scannedString.current);
+        }
+        scannedString.current = ''; // Reset for next scan
+      } else if (e.key.length === 1) { // Normal alphanumeric characters
+        scannedString.current += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -37,7 +92,6 @@ export default function ReceptionDesk() {
 
         <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center mb-6 shadow-inner">
           <div className="w-56 h-56 bg-white border-4 border-slate-800 rounded-xl flex items-center justify-center p-4 shadow-md overflow-hidden">
-            {/* Show QR only when data is loaded */}
             {qrData ? (
               <QRCodeSVG value={qrData} size={180} />
             ) : (
@@ -49,14 +103,23 @@ export default function ReceptionDesk() {
           </span>
         </div>
 
-        <button 
-          onClick={fetchQR}
-          className="text-xs font-bold text-slate-500 hover:text-[#084e8d] flex items-center justify-center mx-auto transition-colors"
-        >
-          <RefreshCw size={14} className="mr-1.5" /> Refresh Terminal Token
-        </button>
+        <div className="flex justify-between items-center w-full px-4">
+          <button 
+            onClick={fetchQR}
+            className="text-xs font-bold text-slate-500 hover:text-[#084e8d] flex items-center transition-colors"
+          >
+            <RefreshCw size={14} className="mr-1.5" /> Refresh Terminal
+          </button>
+          
+          {/* Debugging Button - F12 check karne ke liye manual trigger */}
+          <button 
+            onClick={() => handleScan(qrData)}
+            className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded hover:bg-amber-100 transition-colors"
+          >
+            TEST SCAN (F12)
+          </button>
+        </div>
       </div>
     </div>
-    
   );
 }
