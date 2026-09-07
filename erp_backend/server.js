@@ -10,8 +10,26 @@ const app = express();
 // Connect to Database
 connectDB();
 
-// Middlewares
-app.use(cors());
+// CORS Configuration for Live Frontend & Local testing
+const allowedOrigins = [
+  'https://erp.theraptoracademics.com',
+  'http://localhost:5173',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
 app.use(express.json()); 
 app.use('/api/auth', authRoutes);
 
