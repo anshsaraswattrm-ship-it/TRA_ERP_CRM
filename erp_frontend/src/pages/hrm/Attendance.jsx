@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Camera, QrCode, CheckCircle2, Clock, Search, CalendarDays, User, ShieldCheck, LogOut, Loader2, X } from 'lucide-react';
+import { Camera, QrCode, CheckCircle2, Clock, Search, CalendarDays, User, ShieldCheck, LogOut, Loader2, X, Download } from 'lucide-react';
 import * as faceapi from 'face-api.js';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
@@ -7,8 +7,6 @@ import { Scanner } from '@yudiel/react-qr-scanner';
 // Bypass Apple's invisible characters (\u200E) AND Node.js 'Sept' vs 'Sep' mismatches.
 const formatSafeDate = (dateObj) => {
   const day = String(dateObj.getDate()).padStart(2, '0');
-  // Node.js en-GB outputs "Sept" for September. Safari outputs "Sep". 
-  // Hardcoding this array forces frontend to perfectly match your backend DB string.
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
   const month = months[dateObj.getMonth()];
   const year = dateObj.getFullYear();
@@ -53,7 +51,7 @@ export default function Attendance() {
     for (let i = 0; i < 5; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      dates.push(formatSafeDate(d)); // ✅ iPad & PC Date Match Fix
+      dates.push(formatSafeDate(d));
     }
     setAvailableDates(dates);
     setSelectedDate(dates[0]); // Default to Today
@@ -85,7 +83,7 @@ export default function Attendance() {
         const data = await res.json();
         setMyLogs(data);
         
-        const todayDate = formatSafeDate(new Date()); // ✅ iPad & PC Date Match Fix
+        const todayDate = formatSafeDate(new Date());
         const todayLog = data.find(log => log.date === todayDate);
         
         if (todayLog && todayLog.clockInTime !== '--:--' && todayLog.clockOutTime === '--:--') {
@@ -131,8 +129,55 @@ export default function Attendance() {
     log.employeeId?.toLowerCase().includes(adminSearch.toLowerCase())
   );
 
-  // ✅ Filter My Logs to only show the last 5 days
   const filteredMyLogs = myLogs.filter(log => availableDates.includes(log.date));
+
+  // ✅ NEW: Handle Monthly Report CSV Download
+  const handleDownloadMonthlyReport = async () => {
+    const employeeIdInput = prompt("Enter Employee ID for monthly report (e.g., RA-003-BDE-LV1-2026):");
+    if (!employeeIdInput) return;
+
+    const monthInput = prompt("Enter Month short code (e.g., Sep, Aug, Oct):", "Sep");
+    if (!monthInput) return;
+
+    const yearInput = prompt("Enter Year:", "2026");
+    if (!yearInput) return;
+
+    try {
+      setApiLoading(true);
+      const res = await fetch(`https://tra-erp-crm.onrender.com/api/attendance/monthly-report/${employeeIdInput.trim()}?month=${monthInput.trim()}&year=${yearInput.trim()}`, {
+        headers: getAuthHeaders()
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || 'Failed to generate monthly report');
+        setApiLoading(false);
+        return;
+      }
+
+      // Convert JSON report to CSV format
+      let csvContent = "data:text/csv;charset=utf-8,Date,Employee ID,Name,Role,Clock In,Clock Out,Status\n";
+      
+      data.report.forEach(row => {
+        csvContent += `"${row.date}","${data.employee.employeeId}","${data.employee.name}","${data.employee.role || '-'}","${row.clockInTime}","${row.clockOutTime}","${row.status}"\n`;
+      });
+
+      // Trigger browser download
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `${data.employee.name}_${monthInput}_${yearInput}_Attendance.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("Network error while downloading report.");
+    } finally {
+      setApiLoading(false);
+    }
+  };
 
   const startCamera = () => {
     setShowCameraModal(true);
@@ -328,7 +373,7 @@ export default function Attendance() {
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
         
-        {/* ✅ Toggle Buttons ONLY for Super Admin */}
+        {/* Toggle Buttons ONLY for Super Admin */}
         {isSuperAdmin && (
           <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
@@ -499,7 +544,6 @@ export default function Attendance() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
-                    {/* ✅ Uses the filteredMyLogs limiting data to 5 days */}
                     {filteredMyLogs.length > 0 ? (
                       filteredMyLogs.map((log) => (
                         <tr key={log._id} className="hover:bg-slate-50 transition-colors">
@@ -529,14 +573,24 @@ export default function Attendance() {
         </div>
       )}
 
-      {/* ✅ ADMIN / RECEPTIONIST VIEW - Visible for Admin, Founder, Receptionist */}
+      {/* ADMIN / RECEPTIONIST VIEW - Visible for Admin, Founder, Receptionist */}
       {viewRole === 'admin' && (isSuperAdmin || isFounder || isReceptionist) && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative w-full">
           <div className="sticky top-0 z-30 bg-slate-50 border-b border-slate-200 p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl shadow-sm">
             <h3 className="text-lg sm:text-xl font-bold text-[#084e8d] flex items-center">
               <CalendarDays className="mr-2 flex-shrink-0" size={24} /> Company Attendance Log
             </h3>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto">
+            
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto items-center">
+              {/* ✅ Download Monthly Report Button */}
+              <button 
+                onClick={handleDownloadMonthlyReport}
+                disabled={apiLoading}
+                className="px-4 py-2 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-lg text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-colors whitespace-nowrap w-full sm:w-auto justify-center"
+              >
+                <Download size={16} /> {apiLoading ? 'Generating...' : 'Download Report'}
+              </button>
+
               <select 
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
@@ -553,7 +607,7 @@ export default function Attendance() {
                   placeholder="Search Employee Name/ID..." 
                   value={adminSearch}
                   onChange={(e) => setAdminSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#084e8d]/50 w-full sm:w-72 bg-white"
+                  className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#084e8d]/50 w-full sm:w-64 bg-white"
                 />
               </div>
             </div>

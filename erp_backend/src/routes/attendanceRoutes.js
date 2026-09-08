@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { clockIn, clockOut, getMyLogs, getAllLogs, getReceptionQR, verifyQRCode } = require('../controllers/attendanceController');
+const { 
+  clockIn, 
+  clockOut, 
+  getMyLogs, 
+  getAllLogs, 
+  getMonthlyReport, 
+  getReceptionQR, 
+  verifyQRCode 
+} = require('../controllers/attendanceController');
 const { protect } = require('../middlewares/authMiddleware'); 
 
 // Custom middleware for Attendance Logs visibility
@@ -17,8 +25,11 @@ router.post('/clock-in', protect, clockIn);
 router.post('/clock-out', protect, clockOut);
 router.get('/my-logs', protect, getMyLogs);
 
-// YAHAN FIX KIYA HAI: adminOnly ki jagah canViewLogs laga diya
+// Company Attendance Logs
 router.get('/admin-logs', protect, canViewLogs, getAllLogs);
+
+// ✅ NEW: Monthly Report Route for Download/Export
+router.get('/monthly-report/:employeeId', protect, canViewLogs, getMonthlyReport);
 
 // Reception QR Routes
 router.get('/reception-qr', protect, getReceptionQR);

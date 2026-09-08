@@ -117,6 +117,64 @@ const getAllLogs = async (req, res) => {
   }
 };
 
+// @desc    Get Monthly Attendance Report for a Specific Employee
+// @route   GET /api/attendance/monthly-report/:employeeId
+const getMonthlyReport = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const { month, year } = req.query; // Example: ?month=Sep&year=2026
+
+    const User = require('../models/User');
+    const employee = await User.findOne({ employeeId });
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found!' });
+    }
+
+    const targetMonth = month || 'Sep';
+    const targetYear = year || '2026';
+
+    const logs = await Attendance.find({ employee: employee._id });
+    const monthLogs = logs.filter(log => log.date.includes(targetMonth) && log.date.includes(targetYear));
+
+    const logMap = {};
+    monthLogs.forEach(log => {
+      logMap[log.date] = log;
+    });
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    const monthIndex = monthNames.indexOf(targetMonth);
+    const daysInMonth = new Date(targetYear, monthIndex + 1, 0).getDate();
+
+    const fullMonthReport = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const formattedDay = String(day).padStart(2, '0');
+      const dateStr = `${formattedDay} ${targetMonth} ${targetYear}`;
+
+      if (logMap[dateStr]) {
+        fullMonthReport.push(logMap[dateStr]);
+      } else {
+        fullMonthReport.push({
+          employeeId: employee.employeeId,
+          date: dateStr,
+          clockInTime: '--:--',
+          clockOutTime: '--:--',
+          status: 'Absent',
+          faceVerified: false,
+          qrVerified: false
+        });
+      }
+    }
+
+    res.json({
+      employee: { name: employee.name, employeeId: employee.employeeId, role: employee.role },
+      report: fullMonthReport
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
 // @desc    Get Reception QR Payload for Kiosk TV Display
 // @route   GET /api/attendance/reception-qr
 const getReceptionQR = async (req, res) => {
@@ -154,4 +212,12 @@ const verifyQRCode = async (req, res) => {
   }
 };
 
-module.exports = { clockIn, clockOut, getMyLogs, getAllLogs, getReceptionQR, verifyQRCode };
+module.exports = { 
+  clockIn, 
+  clockOut, 
+  getMyLogs, 
+  getAllLogs, 
+  getMonthlyReport, 
+  getReceptionQR, 
+  verifyQRCode 
+};
