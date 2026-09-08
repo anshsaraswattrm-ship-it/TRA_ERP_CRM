@@ -5,6 +5,9 @@ const connectDB = require('./src/config/db');
 const User = require('./src/models/User');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const authRoutes = require('./src/routes/authRoutes');
+
+const startAttendanceCron = require('./src/utils/cronJobs'); 
+
 const app = express();
 
 // Connect to Database
@@ -58,6 +61,9 @@ seedAdmin();
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
+
+// ✅ START CRON JOBS
+startAttendanceCron();
 
 app.get('/', (req, res) => {
   res.send('Raptor ERP API is running...');
