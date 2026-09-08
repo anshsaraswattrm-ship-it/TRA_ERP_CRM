@@ -131,12 +131,12 @@ export default function Attendance() {
 
   const filteredMyLogs = myLogs.filter(log => availableDates.includes(log.date));
 
-  // ✅ NEW: Handle Monthly Report CSV Download
+  // ✅ Handle Monthly Report CSV Download with "Sept" default
   const handleDownloadMonthlyReport = async () => {
     const employeeIdInput = prompt("Enter Employee ID for monthly report (e.g., RA-003-BDE-LV1-2026):");
     if (!employeeIdInput) return;
 
-    const monthInput = prompt("Enter Month short code (e.g., Sep, Aug, Oct):", "Sep");
+    const monthInput = prompt("Enter Month short code (e.g., Sept, Aug, Oct):", "Sept");
     if (!monthInput) return;
 
     const yearInput = prompt("Enter Year:", "2026");
@@ -392,7 +392,7 @@ export default function Attendance() {
         )}
       </div>
 
-      {/* EMPLOYEE VIEW - Visible only if viewRole === 'employee' */}
+      {/* EMPLOYEE VIEW */}
       {viewRole === 'employee' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-4">
@@ -573,7 +573,7 @@ export default function Attendance() {
         </div>
       )}
 
-      {/* ADMIN / RECEPTIONIST VIEW - Visible for Admin, Founder, Receptionist */}
+      {/* ADMIN / RECEPTIONIST VIEW */}
       {viewRole === 'admin' && (isSuperAdmin || isFounder || isReceptionist) && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative w-full">
           <div className="sticky top-0 z-30 bg-slate-50 border-b border-slate-200 p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl shadow-sm">

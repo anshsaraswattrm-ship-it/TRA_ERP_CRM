@@ -122,7 +122,7 @@ const getAllLogs = async (req, res) => {
 const getMonthlyReport = async (req, res) => {
   try {
     const { employeeId } = req.params;
-    const { month, year } = req.query; // Example: ?month=Sep&year=2026
+    let { month, year } = req.query; // Example: ?month=Sep&year=2026
 
     const User = require('../models/User');
     const employee = await User.findOne({ employeeId });
@@ -130,7 +130,11 @@ const getMonthlyReport = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found!' });
     }
 
-    const targetMonth = month || 'Sep';
+    let targetMonth = month || 'Sept';
+    // ✅ Fix: Normalize 'Sep' to 'Sept' to match DB format
+    if (targetMonth.toLowerCase() === 'sep') {
+      targetMonth = 'Sept';
+    }
     const targetYear = year || '2026';
 
     const logs = await Attendance.find({ employee: employee._id });
