@@ -3,10 +3,13 @@ import { Camera, QrCode, CheckCircle2, Clock, Search, CalendarDays, User, Shield
 import * as faceapi from 'face-api.js';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
-// ✅ FIXED FOR iPAD/SAFARI: Manual strict date formatter to prevent Apple's invisible \u200E characters
+// ✅ 100% BULLETPROOF DATE FORMATTER
+// Bypass Apple's invisible characters (\u200E) AND Node.js 'Sept' vs 'Sep' mismatches.
 const formatSafeDate = (dateObj) => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const day = String(dateObj.getDate()).padStart(2, '0');
+  // Node.js en-GB outputs "Sept" for September. Safari outputs "Sep". 
+  // Hardcoding this array forces frontend to perfectly match your backend DB string.
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
   const month = months[dateObj.getMonth()];
   const year = dateObj.getFullYear();
   return `${day} ${month} ${year}`;
@@ -19,7 +22,6 @@ export default function Attendance() {
   const isSuperAdmin = userRole === 'Super Admin';
   const isFounder = userRole === 'Founder and Director';
   const isReceptionist = userRole === 'Receptionist';
-  const isEmployee = !isSuperAdmin && !isFounder && !isReceptionist;
 
   // Defaults: Admin view for Super Admin, Founder, Receptionist. Employee view for rest.
   const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder || isReceptionist) ? 'admin' : 'employee');
@@ -51,7 +53,7 @@ export default function Attendance() {
     for (let i = 0; i < 5; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      dates.push(formatSafeDate(d)); // iPad fix applied here
+      dates.push(formatSafeDate(d)); // ✅ iPad & PC Date Match Fix
     }
     setAvailableDates(dates);
     setSelectedDate(dates[0]); // Default to Today
@@ -83,7 +85,7 @@ export default function Attendance() {
         const data = await res.json();
         setMyLogs(data);
         
-        const todayDate = formatSafeDate(new Date()); // iPad fix applied here
+        const todayDate = formatSafeDate(new Date()); // ✅ iPad & PC Date Match Fix
         const todayLog = data.find(log => log.date === todayDate);
         
         if (todayLog && todayLog.clockInTime !== '--:--' && todayLog.clockOutTime === '--:--') {
@@ -129,7 +131,7 @@ export default function Attendance() {
     log.employeeId?.toLowerCase().includes(adminSearch.toLowerCase())
   );
 
-  // Filter My Logs to only show the last 5 days
+  // ✅ Filter My Logs to only show the last 5 days
   const filteredMyLogs = myLogs.filter(log => availableDates.includes(log.date));
 
   const startCamera = () => {
@@ -317,8 +319,7 @@ export default function Attendance() {
   };
 
   return (
-    // ✅ REMOVED overflow-x-hidden from main container to prevent iPad Safari layout bugs
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative">
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative overflow-x-hidden">
       
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
@@ -327,7 +328,7 @@ export default function Attendance() {
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
         
-        {/* Toggle Buttons ONLY for Super Admin */}
+        {/* ✅ Toggle Buttons ONLY for Super Admin */}
         {isSuperAdmin && (
           <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
@@ -346,7 +347,7 @@ export default function Attendance() {
         )}
       </div>
 
-      {/* EMPLOYEE VIEW */}
+      {/* EMPLOYEE VIEW - Visible only if viewRole === 'employee' */}
       {viewRole === 'employee' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-4">
@@ -487,8 +488,6 @@ export default function Attendance() {
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-slate-800">My Attendance Log</h3>
               </div>
-              
-              {/* ✅ iPAD FIX: WebkitOverflowScrolling for smooth swiping */}
               <div className="w-full overflow-x-auto rounded-xl border border-slate-200" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-[#084e8d] text-white">
@@ -500,6 +499,7 @@ export default function Attendance() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
+                    {/* ✅ Uses the filteredMyLogs limiting data to 5 days */}
                     {filteredMyLogs.length > 0 ? (
                       filteredMyLogs.map((log) => (
                         <tr key={log._id} className="hover:bg-slate-50 transition-colors">
@@ -529,7 +529,7 @@ export default function Attendance() {
         </div>
       )}
 
-      {/* ✅ ADMIN / RECEPTIONIST VIEW - Company Logs */}
+      {/* ✅ ADMIN / RECEPTIONIST VIEW - Visible for Admin, Founder, Receptionist */}
       {viewRole === 'admin' && (isSuperAdmin || isFounder || isReceptionist) && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative w-full">
           <div className="sticky top-0 z-30 bg-slate-50 border-b border-slate-200 p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl shadow-sm">
@@ -559,7 +559,6 @@ export default function Attendance() {
             </div>
           </div>
 
-          {/* ✅ iPAD FIX: WebkitOverflowScrolling for smooth swiping */}
           <div className="w-full overflow-x-auto rounded-b-2xl custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-[#084e8d] text-white">
