@@ -9,9 +9,11 @@ export default function Attendance() {
   
   const isSuperAdmin = userRole === 'Super Admin';
   const isFounder = userRole === 'Founder and Director';
-  const isEmployee = !isSuperAdmin && !isFounder;
+  const isReceptionist = userRole === 'Receptionist'; // ✅ Added Receptionist role
+  const isEmployee = !isSuperAdmin && !isFounder && !isReceptionist;
 
-  const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder) ? 'admin' : 'employee');
+  // ✅ Receptionist and Founder default to admin view
+  const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder || isReceptionist) ? 'admin' : 'employee');
 
   const [myLogs, setMyLogs] = useState([]);
   const [allEmployeesLogs, setAllEmployeesLogs] = useState([]);
@@ -208,7 +210,6 @@ export default function Attendance() {
       const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
-        // PERFECT MATCH FOR BACKEND
         body: JSON.stringify({ qrToken: actualToken })
       });
       const data = await res.json();
@@ -235,7 +236,6 @@ export default function Attendance() {
       const res = await fetch('https://tra-erp-crm.onrender.com/api/attendance/verify-qr', {
         method: 'POST',
         headers: getAuthHeaders(),
-        // PERFECT MATCH FOR BACKEND
         body: JSON.stringify({ qrToken: actualToken })
       });
       const data = await res.json();
@@ -506,7 +506,8 @@ export default function Attendance() {
         </div>
       )}
 
-      {viewRole === 'admin' && (isSuperAdmin || isFounder) && (
+      {/* ✅ ADMIN / RECEPTIONIST VIEW - SEES EVERYONE'S LOGS */}
+      {viewRole === 'admin' && (isSuperAdmin || isFounder || isReceptionist) && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative">
           <div className="sticky top-0 z-40 bg-slate-50 border-b border-slate-200 p-6 flex flex-col md:flex-row justify-between items-center gap-4 rounded-t-2xl shadow-sm">
             <h3 className="text-xl font-bold text-[#084e8d] flex items-center">

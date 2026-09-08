@@ -56,6 +56,7 @@ export default function UserAccounts() {
       else if (role === 'Team Leader') roleShort = 'TL';
       else if (role === 'BDE LEVEL1') roleShort = 'BDE-LV1'; 
       else if (role === 'BDE LEVEL2') roleShort = 'BDE-LV2';
+      else if (role === 'Receptionist') roleShort = 'REC'; // ✅ Added Receptionist Short Code
 
       const currentYear = new Date().getFullYear();
       const sequenceNumber = String(usersList.length + 1).padStart(3, '0');
@@ -224,6 +225,7 @@ export default function UserAccounts() {
                   <option value="Team Leader">Team Leader</option>
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
+                  <option value="Receptionist">Receptionist</option> {/* ✅ Added Receptionist to Edit Modal */}
                 </select>
               </div>
 
@@ -285,6 +287,7 @@ export default function UserAccounts() {
                   <option value="Team Leader">Team Leader</option>
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
+                  <option value="Receptionist">Receptionist</option> {/* ✅ Added Receptionist to Create Form */}
                 </select>
               </div>
 
@@ -340,7 +343,17 @@ export default function UserAccounts() {
                       <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap"><span className="px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-xs font-bold font-mono">{user.employeeId}</span></td>
                         <td className="px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-sm font-semibold text-slate-800">{user.name}</span><span className="text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : user.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>{user.role}</span></td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : 
+                            user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : 
+                            user.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 
+                            user.role === 'Receptionist' ? 'bg-teal-100 text-teal-700' : // ✅ Added distinct color logic for Receptionist
+                            'bg-emerald-100 text-emerald-700'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-2">
                             {/* Edit Button */}

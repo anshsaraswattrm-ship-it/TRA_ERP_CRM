@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -11,19 +11,17 @@ import {
   ShieldCheck,
   LogOut,
   TrendingUp,
-  Activity,
-  Monitor
+  Monitor,
+  X 
 } from 'lucide-react';
 
-export default function Sidebar() {
+export default function Sidebar({ closeMobile }) {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Get dynamic user role from localStorage
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   const userRole = userInfo?.role || ''; 
   
-  // State to manage sidebar visibility
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
@@ -49,7 +47,7 @@ export default function Sidebar() {
       name: 'Attendance', 
       path: '/attendance', 
       icon: UserCheck, 
-      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2'] 
+      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist'] 
     },
     { 
       name: 'Leave Action Center', 
@@ -85,7 +83,7 @@ export default function Sidebar() {
       name: 'Reception Kiosk View',
       path: '/admin/reception-desk',
       icon: Monitor,
-      roles: ['Super Admin', 'Founder and Director', 'Manager'] 
+      roles: ['Super Admin', 'Receptionist'] 
     },
     { 
       name: 'User Accounts', 
@@ -95,20 +93,17 @@ export default function Sidebar() {
     },
   ];
 
-  // Filter menus based on actual logged-in user's role
   const authorizedMenus = menuItems.filter(item => item.roles.includes(userRole));
 
-  // Secure Logout function
   const handleLogout = (e) => {
     e.preventDefault();
-    localStorage.removeItem('userInfo'); // Remove token
-    navigate('/login'); // Redirect to login
+    localStorage.removeItem('userInfo'); 
+    navigate('/login'); 
   };
 
   return (
-    <div className={`relative bg-[#111827] text-white min-h-screen flex flex-col transition-all duration-300 ease-in-out z-20 border-r border-slate-800 group/sidebar ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <div className={`relative bg-[#111827] text-white h-screen flex flex-col transition-all duration-300 ease-in-out z-20 border-r border-slate-800 group/sidebar ${isCollapsed ? 'w-20' : 'w-64'}`}>
       
-      {/* Top Header: Logo & Toggle */}
       <div className={`h-20 flex items-center border-b border-slate-800 bg-[#111827] px-4 relative overflow-visible group/header ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         
         {!isCollapsed ? (
@@ -121,7 +116,7 @@ export default function Sidebar() {
               />
             </div>
 
-            <div className="relative group/toggle flex items-center justify-center">
+            <div className="relative group/toggle hidden lg:flex items-center justify-center">
               <button 
                 onClick={() => setIsCollapsed(true)}
                 className="text-slate-300 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-all duration-200 flex items-center justify-center focus:outline-none"
@@ -137,6 +132,15 @@ export default function Sidebar() {
                 Close sidebar
               </div>
             </div>
+
+            {closeMobile && (
+              <button 
+                onClick={closeMobile} 
+                className="lg:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-all"
+              >
+                <X size={24} />
+              </button>
+            )}
           </>
         ) : (
           <div className="relative w-full h-full flex items-center justify-center">
@@ -148,7 +152,7 @@ export default function Sidebar() {
               R
             </div>
 
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/header:opacity-100 transition-opacity duration-300 group/toggle">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/header:opacity-100 transition-opacity duration-300 group/toggle hidden lg:flex">
               <button 
                 onClick={() => setIsCollapsed(false)}
                 className="text-slate-300 hover:text-white p-2 rounded-lg bg-slate-800 hover:bg-slate-700 shadow-md border border-slate-700/80 transition-all duration-200 flex items-center justify-center focus:outline-none"
@@ -168,7 +172,6 @@ export default function Sidebar() {
         )}
       </div>
       
-      {/* Navigation Links */}
       <div 
         onClick={(e) => {
           if (isCollapsed && e.target === e.currentTarget) {
@@ -192,7 +195,11 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 to={item.path}
-                onClick={() => window.innerWidth < 768 && setIsCollapsed(true)}
+                onClick={() => {
+                  if (window.innerWidth < 1024 && closeMobile) {
+                    closeMobile(); 
+                  }
+                }}
                 className={`group relative flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                   isActive 
                   ? 'bg-[#084e8d] text-white shadow-md' 
@@ -218,7 +225,6 @@ export default function Sidebar() {
         </nav>
       </div>
       
-      {/* Logout Button */}
       <div className="p-4 bg-[#111827] border-t border-slate-800">
         <button 
           onClick={handleLogout}

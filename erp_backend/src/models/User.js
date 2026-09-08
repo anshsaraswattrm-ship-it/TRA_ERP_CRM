@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2'],
+      // ✅ Added 'Receptionist' below
+      enum: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist'],
       default: 'BDE LEVEL1'
     },
     faceDescriptor: {
