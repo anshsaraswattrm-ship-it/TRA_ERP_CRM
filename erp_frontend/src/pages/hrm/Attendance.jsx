@@ -3,6 +3,15 @@ import { Camera, QrCode, CheckCircle2, Clock, Search, CalendarDays, User, Shield
 import * as faceapi from 'face-api.js';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
+// ✅ FIXED FOR iPAD/SAFARI: Manual strict date formatter to prevent Apple's invisible \u200E characters
+const formatSafeDate = (dateObj) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = months[dateObj.getMonth()];
+  const year = dateObj.getFullYear();
+  return `${day} ${month} ${year}`;
+};
+
 export default function Attendance() {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   const userRole = userInfo?.role || 'BDE LEVEL1';
@@ -37,12 +46,12 @@ export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
-    // Generate Today + Last 4 Days (Total 5 Days)
+    // Generate Today + Last 4 Days (Total 5 Days) using the SAFE formatter
     const dates = [];
     for (let i = 0; i < 5; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      dates.push(d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
+      dates.push(formatSafeDate(d)); // iPad fix applied here
     }
     setAvailableDates(dates);
     setSelectedDate(dates[0]); // Default to Today
@@ -74,7 +83,7 @@ export default function Attendance() {
         const data = await res.json();
         setMyLogs(data);
         
-        const todayDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const todayDate = formatSafeDate(new Date()); // iPad fix applied here
         const todayLog = data.find(log => log.date === todayDate);
         
         if (todayLog && todayLog.clockInTime !== '--:--' && todayLog.clockOutTime === '--:--') {
@@ -308,7 +317,8 @@ export default function Attendance() {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative overflow-x-hidden">
+    // ✅ REMOVED overflow-x-hidden from main container to prevent iPad Safari layout bugs
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative">
       
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
@@ -317,7 +327,7 @@ export default function Attendance() {
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
         
-        {/* ✅ FIXED: Toggle Buttons ONLY visible for Super Admin */}
+        {/* Toggle Buttons ONLY for Super Admin */}
         {isSuperAdmin && (
           <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
@@ -336,7 +346,7 @@ export default function Attendance() {
         )}
       </div>
 
-      {/* EMPLOYEE VIEW - Visible only if viewRole === 'employee' (Employees & toggled Super Admins) */}
+      {/* EMPLOYEE VIEW */}
       {viewRole === 'employee' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-4">
@@ -477,7 +487,9 @@ export default function Attendance() {
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-slate-800">My Attendance Log</h3>
               </div>
-              <div className="w-full overflow-x-auto rounded-xl border border-slate-200">
+              
+              {/* ✅ iPAD FIX: WebkitOverflowScrolling for smooth swiping */}
+              <div className="w-full overflow-x-auto rounded-xl border border-slate-200" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-[#084e8d] text-white">
                     <tr>
@@ -488,7 +500,6 @@ export default function Attendance() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
-                    {/* ✅ FIXED: Displaying filteredMyLogs (last 5 days) */}
                     {filteredMyLogs.length > 0 ? (
                       filteredMyLogs.map((log) => (
                         <tr key={log._id} className="hover:bg-slate-50 transition-colors">
@@ -548,7 +559,8 @@ export default function Attendance() {
             </div>
           </div>
 
-          <div className="w-full overflow-x-auto rounded-b-2xl custom-scrollbar">
+          {/* ✅ iPAD FIX: WebkitOverflowScrolling for smooth swiping */}
+          <div className="w-full overflow-x-auto rounded-b-2xl custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-[#084e8d] text-white">
                 <tr>
