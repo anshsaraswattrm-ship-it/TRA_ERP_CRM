@@ -29,7 +29,7 @@ export default function Sidebar({ closeMobile }) {
       name: 'Dashboard', 
       path: '/dashboard', 
       icon: LayoutDashboard, 
-      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2'] 
+      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist'] 
     },
     { 
       name: 'Leads & Sales', 

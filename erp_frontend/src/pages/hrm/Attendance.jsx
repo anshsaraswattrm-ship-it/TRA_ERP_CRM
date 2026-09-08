@@ -12,6 +12,7 @@ export default function Attendance() {
   const isReceptionist = userRole === 'Receptionist';
   const isEmployee = !isSuperAdmin && !isFounder && !isReceptionist;
 
+  // ✅ Default to admin view for Receptionist, Admin, Founder
   const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder || isReceptionist) ? 'admin' : 'employee');
 
   const [myLogs, setMyLogs] = useState([]);
@@ -92,23 +93,26 @@ export default function Attendance() {
       if (res.ok) {
         const data = await res.json();
         setAllEmployeesLogs(data);
+      } else {
+        console.error("Failed to fetch. Might be a permission issue in backend for this role.");
       }
     } catch (error) {
       console.error("Failed to fetch admin logs", error);
     }
   };
 
+  // ✅ Fixed UseEffect: Always fetch my logs if token exists, regardless of view
   useEffect(() => {
-    if (userInfo?.token && (viewRole === 'employee' || isSuperAdmin)) {
+    if (userInfo?.token) {
       fetchMyLogs();
     }
-  }, []);
+  }, [userInfo?.token]);
 
   useEffect(() => {
     if (viewRole === 'admin' && selectedDate && userInfo?.token) {
       fetchAdminLogs(selectedDate);
     }
-  }, [viewRole, selectedDate]);
+  }, [viewRole, selectedDate, userInfo?.token]);
 
   const filteredAdminLogs = allEmployeesLogs.filter(log => 
     log.employee?.name?.toLowerCase().includes(adminSearch.toLowerCase()) || 
@@ -308,7 +312,8 @@ export default function Attendance() {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight">Attendance System</h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
-        {isSuperAdmin && (
+        {/* ✅ FIXED: Toggle buttons available to Super Admin, Founder AND Receptionist */}
+        {(isSuperAdmin || isFounder || isReceptionist) && (
           <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
               onClick={() => setViewRole('employee')}
@@ -320,7 +325,7 @@ export default function Attendance() {
               onClick={() => setViewRole('admin')}
               className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors ${viewRole === 'admin' ? 'bg-white text-[#084e8d] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              Admin View
+              Company Logs View
             </button>
           </div>
         )}
