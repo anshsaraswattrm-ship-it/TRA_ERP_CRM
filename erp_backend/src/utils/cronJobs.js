@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const Attendance = require('./models/Attendance'); // Apne folder structure ke hisaab se path theek kar lena
-const User = require('./models/User'); 
+const Attendance = require('../models/Attendance'); // ✅ FIX: Added ../
+const User = require('../models/User');             // ✅ FIX: Added ../
 
 // Same bulletproof date formatter
 const getFormattedDate = () => {
