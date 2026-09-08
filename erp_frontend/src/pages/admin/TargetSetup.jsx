@@ -4,28 +4,28 @@ export default function TargetSetup() {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative">
       
-      <div className="mb-8">
-        <h2 className="text-3xl font-extrabold text-[#084e8d] tracking-tight flex items-center">
-          <Target className="mr-3" size={28} /> Master Target Setup
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight flex items-center">
+          <Target className="mr-2 sm:mr-3 text-[#084e8d]" size={24} className="sm:w-7 sm:h-7 w-6 h-6" /> Master Target Setup
         </h2>
-        <p className="text-sm text-slate-500 mt-2">Configure and broadcast monthly operational targets for the team.</p>
+        <p className="text-xs sm:text-sm text-slate-500 mt-2">Configure and broadcast monthly operational targets for the team.</p>
       </div>
       
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80">
-        <div className="flex items-center mb-8 pb-4 border-b border-slate-100">
-          <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3">
+      <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80 w-full">
+        <div className="flex items-center mb-6 sm:mb-8 pb-4 border-b border-slate-100">
+          <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
             <TrendingUp className="text-[#084e8d]" size={20} />
           </div>
-          <h3 className="text-lg font-bold text-slate-800">Set Monthly Operations Target</h3>
+          <h3 className="text-base sm:text-lg font-bold text-slate-800 leading-tight">Set Monthly Operations Target</h3>
         </div>
         
         <form className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             
             {/* Target Role */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center">
-                <Users size={14} className="mr-1.5" /> Target Role
+                <Users size={14} className="mr-1.5 flex-shrink-0" /> Target Role
               </label>
               <select className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#084e8d]/20 focus:border-[#084e8d] transition-all outline-none">
                 <option value="" disabled selected>Select Role / Team</option>
@@ -38,7 +38,7 @@ export default function TargetSetup() {
             {/* Target Month */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center">
-                <Calendar size={14} className="mr-1.5" /> Target Month
+                <Calendar size={14} className="mr-1.5 flex-shrink-0" /> Target Month
               </label>
               <input 
                 type="month" 
@@ -49,7 +49,7 @@ export default function TargetSetup() {
             {/* Target Admissions */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center">
-                <Target size={14} className="mr-1.5" /> Target Admissions (Count)
+                <Target size={14} className="mr-1.5 flex-shrink-0" /> Target Admissions (Count)
               </label>
               <input 
                 type="number" 
@@ -62,7 +62,7 @@ export default function TargetSetup() {
             {/* Revenue Target */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center">
-                <Briefcase size={14} className="mr-1.5" /> Revenue Target (Value)
+                <Briefcase size={14} className="mr-1.5 flex-shrink-0" /> Revenue Target (Value)
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-3 text-slate-400 font-bold">₹</span>
@@ -75,12 +75,12 @@ export default function TargetSetup() {
             </div>
           </div>
           
-          <div className="pt-8 mt-4 border-t border-slate-100">
+          <div className="pt-6 sm:pt-8 mt-4 border-t border-slate-100">
             <button 
               type="button" 
               className="w-full flex justify-center items-center bg-[#084e8d] text-white py-3.5 rounded-xl hover:bg-[#063a6b] text-sm font-bold shadow-lg shadow-[#084e8d]/20 transition-all transform hover:-translate-y-0.5"
             >
-              <Send className="mr-2" size={18} /> Broadcast Target to Team
+              <Send className="mr-2 flex-shrink-0" size={18} /> Broadcast Target to Team
             </button>
           </div>
         </form>

@@ -9,10 +9,9 @@ export default function Attendance() {
   
   const isSuperAdmin = userRole === 'Super Admin';
   const isFounder = userRole === 'Founder and Director';
-  const isReceptionist = userRole === 'Receptionist'; // ✅ Added Receptionist role
+  const isReceptionist = userRole === 'Receptionist';
   const isEmployee = !isSuperAdmin && !isFounder && !isReceptionist;
 
-  // ✅ Receptionist and Founder default to admin view
   const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder || isReceptionist) ? 'admin' : 'employee');
 
   const [myLogs, setMyLogs] = useState([]);
@@ -181,7 +180,6 @@ export default function Attendance() {
       }
 
       const distance = faceapi.euclideanDistance(detection.descriptor, registeredDescriptor);
-      console.log("Face Match Euclidean Distance:", distance);
 
       if (distance < 0.6) {
         setFaceStatusMsg('Face Verified Successfully!');
@@ -302,23 +300,25 @@ export default function Attendance() {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative overflow-x-hidden">
+      
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-[#084e8d] tracking-tight">Attendance System</h2>
-          <p className="text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight">Attendance System</h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
         {isSuperAdmin && (
-          <div className="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+          <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
               onClick={() => setViewRole('employee')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-colors ${viewRole === 'employee' ? 'bg-white text-[#084e8d] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors ${viewRole === 'employee' ? 'bg-white text-[#084e8d] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Employee View
             </button>
             <button 
               onClick={() => setViewRole('admin')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-colors ${viewRole === 'admin' ? 'bg-white text-[#084e8d] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors ${viewRole === 'admin' ? 'bg-white text-[#084e8d] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Admin View
             </button>
@@ -327,34 +327,34 @@ export default function Attendance() {
       </div>
 
       {viewRole === 'employee' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-4">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
               <div className="flex items-center mb-6 pb-4 border-b border-slate-100">
-                <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3">
+                <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
                   <ShieldCheck className="text-[#084e8d]" size={20} />
                 </div>
-                <h3 className="text-lg font-bold text-slate-800">Daily Access Portal</h3>
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">Daily Access Portal</h3>
               </div>
 
               {isCheckedIn ? (
                 <div className="text-center py-4">
-                  <div className="mx-auto w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4 border border-green-100">
-                    <CheckCircle2 className="text-green-500" size={40} />
+                  <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-green-50 rounded-full flex items-center justify-center mb-4 border border-green-100">
+                    <CheckCircle2 className="text-green-500" size={36} className="sm:w-10 sm:h-10 w-8 h-8" />
                   </div>
-                  <h4 className="text-xl font-bold text-slate-800 mb-1">You are Clocked In</h4>
-                  <p className="text-xs text-slate-500 mb-8 px-4">Attendance marked successfully. Complete verification to clock out securely.</p>
+                  <h4 className="text-lg sm:text-xl font-bold text-slate-800 mb-1">You are Clocked In</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-500 mb-8 px-2 sm:px-4">Attendance marked successfully. Complete verification to clock out securely.</p>
 
                   <div className="max-w-xs mx-auto text-left">
-                    <div className={`p-5 rounded-xl border-2 transition-all mb-6 ${clockOutStep >= 2 ? 'border-green-200 bg-green-50' : clockOutStep === 1 ? 'border-[#e9272e]/30 bg-[#e9272e]/5' : 'border-slate-200 bg-slate-50'}`}>
+                    <div className={`p-4 sm:p-5 rounded-xl border-2 transition-all mb-6 ${clockOutStep >= 2 ? 'border-green-200 bg-green-50' : clockOutStep === 1 ? 'border-[#e9272e]/30 bg-[#e9272e]/5' : 'border-slate-200 bg-slate-50'}`}>
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-slate-800 text-sm">QR Location Verification</h4>
-                        {clockOutStep >= 2 && <CheckCircle2 className="text-green-500" size={18} />}
+                        <h4 className="font-bold text-slate-800 text-xs sm:text-sm">QR Location Verification</h4>
+                        {clockOutStep >= 2 && <CheckCircle2 className="text-green-500 flex-shrink-0" size={18} />}
                       </div>
 
                       {clockOutStep === 0 && !isScanningQROut && (
-                        <button onClick={() => setIsScanningQROut(true)} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
-                          <QrCode className="mr-2" size={16} /> Open Camera to Scan Out
+                        <button onClick={() => setIsScanningQROut(true)} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
+                          <QrCode className="mr-2 flex-shrink-0" size={16} /> Open Camera to Scan
                         </button>
                       )}
 
@@ -364,64 +364,64 @@ export default function Attendance() {
                             onScan={(text) => handleQRScanOutActual(text)} 
                             onError={(error) => console.log(error?.message)} 
                           />
-                          <button onClick={() => setIsScanningQROut(false)} className="w-full py-2 bg-red-500 hover:bg-red-600 transition-colors text-white text-xs font-bold">Cancel Scanner</button>
+                          <button onClick={() => setIsScanningQROut(false)} className="w-full py-2 bg-red-500 hover:bg-red-600 transition-colors text-white text-[11px] sm:text-xs font-bold">Cancel Scanner</button>
                         </div>
                       )}
 
                       {clockOutStep === 1 && (
-                        <div className="text-center py-2 text-[#e9272e] font-bold text-sm flex justify-center items-center">
+                        <div className="text-center py-2 text-[#e9272e] font-bold text-xs sm:text-sm flex justify-center items-center">
                           <Loader2 className="animate-spin mr-2" size={16} /> Verifying Code...
                         </div>
                       )}
 
-                      {clockOutStep >= 2 && <p className="text-xs text-green-600 font-semibold">Exit Location Verified.</p>}
+                      {clockOutStep >= 2 && <p className="text-[11px] sm:text-xs text-green-600 font-semibold">Exit Location Verified.</p>}
                     </div>
 
                     <button 
                       disabled={clockOutStep !== 2 || apiLoading}
                       onClick={handleClockOut}
-                      className={`w-full flex items-center justify-center py-3.5 px-4 font-bold rounded-xl shadow-lg transition-all transform ${clockOutStep === 2 ? 'bg-[#e9272e] hover:bg-[#c91d24] text-white shadow-[#e9272e]/20 hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                      className={`w-full flex items-center justify-center py-3 sm:py-3.5 px-4 font-bold rounded-xl shadow-lg transition-all transform text-sm sm:text-base ${clockOutStep === 2 ? 'bg-[#e9272e] hover:bg-[#c91d24] text-white shadow-[#e9272e]/20 hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
                     >
-                      {apiLoading ? <Loader2 className="animate-spin mr-2" size={20} /> : <LogOut className="mr-2" size={20} />}
+                      {apiLoading ? <Loader2 className="animate-spin mr-2 flex-shrink-0" size={18} /> : <LogOut className="mr-2 flex-shrink-0" size={18} />}
                       {apiLoading ? 'Clocking out...' : 'Confirm Clock-Out'}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  <div className={`p-5 rounded-xl border-2 transition-all ${authStep >= 2 ? 'border-green-200 bg-green-50' : authStep === 1 ? 'border-[#084e8d]/40 bg-[#084e8d]/5' : 'border-slate-200 bg-slate-50'}`}>
+                <div className="space-y-4 sm:space-y-6">
+                  <div className={`p-4 sm:p-5 rounded-xl border-2 transition-all ${authStep >= 2 ? 'border-green-200 bg-green-50' : authStep === 1 ? 'border-[#084e8d]/40 bg-[#084e8d]/5' : 'border-slate-200 bg-slate-50'}`}>
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-slate-800 flex items-center text-sm">
-                        <span className="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2.5">1</span> 
+                      <h4 className="font-bold text-slate-800 flex items-center text-xs sm:text-sm">
+                        <span className="bg-slate-800 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs mr-2 sm:mr-2.5 flex-shrink-0">1</span> 
                         Face Verification
                       </h4>
-                      {authStep >= 2 && <CheckCircle2 className="text-green-500" size={20} />}
+                      {authStep >= 2 && <CheckCircle2 className="text-green-500 flex-shrink-0" size={18} />}
                     </div>
                     {authStep === 0 && (
-                      <button onClick={startCamera} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
-                        <Camera className="mr-2" size={18} /> Start Camera
+                      <button onClick={startCamera} className="w-full py-2 sm:py-2.5 bg-white border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
+                        <Camera className="mr-2 flex-shrink-0" size={16} /> Start Camera
                       </button>
                     )}
                     {authStep === 1 && (
-                      <div className="text-center py-2 text-[#084e8d] font-bold flex justify-center items-center text-sm">
-                        <Loader2 className="animate-spin mr-2" size={18} /> Scanning Face...
+                      <div className="text-center py-2 text-[#084e8d] font-bold flex justify-center items-center text-xs sm:text-sm">
+                        <Loader2 className="animate-spin mr-2" size={16} /> Scanning Face...
                       </div>
                     )}
-                    {authStep >= 2 && <p className="text-xs text-green-600 font-semibold">Face Matched Successfully.</p>}
+                    {authStep >= 2 && <p className="text-[11px] sm:text-xs text-green-600 font-semibold">Face Matched Successfully.</p>}
                   </div>
 
-                  <div className={`p-5 rounded-xl border-2 transition-all ${authStep >= 4 ? 'border-green-200 bg-green-50' : authStep === 3 ? 'border-[#084e8d]/40 bg-[#084e8d]/5' : 'border-slate-200 bg-slate-50 opacity-50'}`}>
+                  <div className={`p-4 sm:p-5 rounded-xl border-2 transition-all ${authStep >= 4 ? 'border-green-200 bg-green-50' : authStep === 3 ? 'border-[#084e8d]/40 bg-[#084e8d]/5' : 'border-slate-200 bg-slate-50 opacity-50'}`}>
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-slate-800 flex items-center text-sm">
-                        <span className="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2.5">2</span> 
+                      <h4 className="font-bold text-slate-800 flex items-center text-xs sm:text-sm">
+                        <span className="bg-slate-800 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs mr-2 sm:mr-2.5 flex-shrink-0">2</span> 
                         Reception TV QR Scan
                       </h4>
-                      {authStep >= 4 && <CheckCircle2 className="text-green-500" size={20} />}
+                      {authStep >= 4 && <CheckCircle2 className="text-green-500 flex-shrink-0" size={18} />}
                     </div>
 
                     {authStep === 2 && !isScanningQRIn && (
-                      <button onClick={() => setIsScanningQRIn(true)} className="w-full py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
-                        <QrCode className="mr-2" size={18} /> Open Camera to Scan
+                      <button onClick={() => setIsScanningQRIn(true)} className="w-full py-2 sm:py-2.5 bg-white border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold rounded-lg hover:bg-slate-100 flex justify-center items-center shadow-sm">
+                        <QrCode className="mr-2 flex-shrink-0" size={16} /> Open Camera to Scan
                       </button>
                     )}
 
@@ -431,25 +431,25 @@ export default function Attendance() {
                           onScan={(text) => handleQRScanInActual(text)} 
                           onError={(error) => console.log(error?.message)} 
                         />
-                        <button onClick={() => setIsScanningQRIn(false)} className="w-full py-2 bg-red-500 hover:bg-red-600 transition-colors text-white text-xs font-bold">Cancel Scanner</button>
+                        <button onClick={() => setIsScanningQRIn(false)} className="w-full py-2 bg-red-500 hover:bg-red-600 transition-colors text-white text-[11px] sm:text-xs font-bold">Cancel Scanner</button>
                       </div>
                     )}
 
                     {authStep === 3 && (
-                      <div className="text-center py-2 text-[#084e8d] font-bold flex justify-center items-center text-sm">
-                        <Loader2 className="animate-spin mr-2" size={18} /> Verifying Dynamic QR...
+                      <div className="text-center py-2 text-[#084e8d] font-bold flex justify-center items-center text-xs sm:text-sm">
+                        <Loader2 className="animate-spin mr-2" size={16} /> Verifying Dynamic QR...
                       </div>
                     )}
-                    {authStep >= 4 && <p className="text-xs text-green-600 font-semibold">Office Wi-Fi & QR Verified.</p>}
+                    {authStep >= 4 && <p className="text-[11px] sm:text-xs text-green-600 font-semibold">Office Wi-Fi & QR Verified.</p>}
                   </div>
 
                   <div className="pt-2">
                     <button 
                       disabled={authStep !== 4 || apiLoading}
                       onClick={handleClockIn}
-                      className={`w-full py-3.5 rounded-xl font-bold text-base transition-all transform flex justify-center items-center ${authStep === 4 ? 'bg-[#084e8d] text-white hover:bg-[#063a6b] shadow-lg shadow-[#084e8d]/20 hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                      className={`w-full py-3 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base transition-all transform flex justify-center items-center ${authStep === 4 ? 'bg-[#084e8d] text-white hover:bg-[#063a6b] shadow-lg shadow-[#084e8d]/20 hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
                     >
-                      {apiLoading ? <Loader2 className="animate-spin mr-2" size={18} /> : <Clock className="mr-2" size={18} />}
+                      {apiLoading ? <Loader2 className="animate-spin mr-2 flex-shrink-0" size={18} /> : <Clock className="mr-2 flex-shrink-0" size={18} />}
                       {apiLoading ? 'Clocking in...' : 'Mark Attendance'}
                     </button>
                   </div>
@@ -459,32 +459,32 @@ export default function Attendance() {
           </div>
 
           <div className="lg:col-span-8">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-full">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 h-full">
               <div className="flex items-center mb-6 pb-4 border-b border-slate-100">
-                <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3">
+                <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
                   <User className="text-[#084e8d]" size={20} />
                 </div>
-                <h3 className="text-lg font-bold text-slate-800">My Attendance Log</h3>
+                <h3 className="text-base sm:text-lg font-bold text-slate-800">My Attendance Log</h3>
               </div>
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-[#084e8d] text-white">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Clock In</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Clock Out</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Status</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Date</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock In</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock Out</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider">Status</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
                     {myLogs.length > 0 ? (
                       myLogs.map((log) => (
                         <tr key={log._id} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">{log.date}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600">{log.clockInTime}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600">{log.clockOutTime}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <span className={`px-4 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full ${
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-800">{log.date}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockInTime}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockOutTime}</td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                            <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${
                               log.status === 'Present' ? 'bg-green-100 text-green-800' : 
                               log.status === 'Late' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500'
                             }`}>
@@ -495,7 +495,7 @@ export default function Attendance() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="px-6 py-8 text-center text-slate-500">No attendance records found.</td>
+                        <td colSpan="4" className="px-6 py-8 text-center text-xs sm:text-sm text-slate-500">No attendance records found.</td>
                       </tr>
                     )}
                   </tbody>
@@ -506,31 +506,31 @@ export default function Attendance() {
         </div>
       )}
 
-      {/* ✅ ADMIN / RECEPTIONIST VIEW - SEES EVERYONE'S LOGS */}
+      {/* ✅ ADMIN / RECEPTIONIST VIEW */}
       {viewRole === 'admin' && (isSuperAdmin || isFounder || isReceptionist) && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative">
-          <div className="sticky top-0 z-40 bg-slate-50 border-b border-slate-200 p-6 flex flex-col md:flex-row justify-between items-center gap-4 rounded-t-2xl shadow-sm">
-            <h3 className="text-xl font-bold text-[#084e8d] flex items-center">
-              <CalendarDays className="mr-2" size={24} /> Company Attendance Log
+          <div className="sticky top-0 z-30 bg-slate-50 border-b border-slate-200 p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl shadow-sm">
+            <h3 className="text-lg sm:text-xl font-bold text-[#084e8d] flex items-center">
+              <CalendarDays className="mr-2 flex-shrink-0" size={24} /> Company Attendance Log
             </h3>
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto">
               <select 
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#084e8d]/50"
+                className="px-3 sm:px-4 py-2 border border-slate-300 rounded-lg text-xs sm:text-sm font-bold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#084e8d]/50 w-full sm:w-auto"
               >
                 {availableDates.map(date => (
                   <option key={date} value={date}>{date === availableDates[0] ? 'Today' : date}</option>
                 ))}
               </select>
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+              <div className="relative w-full sm:w-auto">
+                <Search className="absolute left-3 top-2 sm:top-2.5 text-slate-400" size={16} />
                 <input 
                   type="text" 
                   placeholder="Search Employee Name/ID..." 
                   value={adminSearch}
                   onChange={(e) => setAdminSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#084e8d]/50 w-full sm:w-72 bg-white"
+                  className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#084e8d]/50 w-full sm:w-72 bg-white"
                 />
               </div>
             </div>
@@ -540,28 +540,28 @@ export default function Attendance() {
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-[#084e8d] text-white">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Employee Info</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Designation</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Clock In</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Clock Out</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Status</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Employee Info</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Designation</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock In</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock Out</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
                 {filteredAdminLogs.length > 0 ? (
                   filteredAdminLogs.map((log) => (
                     <tr key={log._id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-bold text-slate-800">{log.employee?.name || 'Unknown'}</span>
-                          <span className="text-xs font-medium text-slate-500 mt-0.5">{log.employeeId}</span>
+                          <span className="font-bold text-slate-800 text-xs sm:text-sm">{log.employee?.name || 'Unknown'}</span>
+                          <span className="text-[10px] sm:text-xs font-medium text-slate-500 mt-0.5">{log.employeeId}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-600">{log.employee?.role || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-700">{log.clockInTime}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-700">{log.clockOutTime}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <span className={`px-4 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full ${
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.employee?.role || '-'}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-700">{log.clockInTime}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-700">{log.clockOutTime}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
+                        <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${
                           log.status === 'Present' ? 'bg-green-100 text-green-800' : 
                           log.status === 'Late' ? 'bg-amber-100 text-amber-800' : 
                           'bg-[#e9272e]/10 text-[#e9272e]'
@@ -573,7 +573,7 @@ export default function Attendance() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="px-6 py-12 text-center text-slate-500 font-medium">
+                    <td colSpan="5" className="px-6 py-12 text-center text-xs sm:text-sm text-slate-500 font-medium">
                       No records found for the selected date or search criteria.
                     </td>
                   </tr>
@@ -584,23 +584,24 @@ export default function Attendance() {
         </div>
       )}
 
+      {/* Modal Cameras */}
       {showCameraModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative border border-slate-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative border border-slate-200">
             <button 
               onClick={stopCamera} 
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 p-2 rounded-full"
             >
               <X size={20} />
             </button>
-            <h3 className="text-xl font-bold text-[#084e8d] mb-2 flex items-center">
-              <Camera className="mr-2" size={22} /> Live Face Verification
+            <h3 className="text-lg sm:text-xl font-bold text-[#084e8d] mb-2 flex items-center pr-8">
+              <Camera className="mr-2 flex-shrink-0" size={20} className="sm:w-5 sm:h-5 w-4 h-4" /> Live Face Verification
             </h3>
-            <p className="text-xs text-slate-500 mb-4">{faceStatusMsg}</p>
-            <div className="relative w-full h-72 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shadow-inner mb-6">
+            <p className="text-[11px] sm:text-xs text-slate-500 mb-4">{faceStatusMsg}</p>
+            <div className="relative w-full h-64 sm:h-72 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shadow-inner mb-6">
               {cameraLoading && (
-                <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50">
-                  <Loader2 className="animate-spin mr-2" size={24} /> Starting Camera...
+                <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50 text-sm">
+                  <Loader2 className="animate-spin mr-2" size={20} /> Starting Camera...
                 </div>
               )}
               <video 
@@ -614,9 +615,9 @@ export default function Attendance() {
             <button 
               onClick={verifyLiveFace}
               disabled={cameraLoading || !modelsLoaded}
-              className="w-full py-3 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-xl shadow-lg shadow-[#084e8d]/20 transition-all flex justify-center items-center cursor-pointer"
+              className="w-full py-3 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-xl shadow-lg shadow-[#084e8d]/20 transition-all flex justify-center items-center cursor-pointer text-sm sm:text-base"
             >
-              <ShieldCheck className="mr-2" size={20} /> Verify & Match Face
+              <ShieldCheck className="mr-2 flex-shrink-0" size={18} /> Verify & Match Face
             </button>
           </div>
         </div>

@@ -137,17 +137,17 @@ export default function ITFaceRegistration() {
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4">
-      <div className="mb-8">
-        <h2 className="text-3xl font-extrabold text-[#084e8d] tracking-tight">IT Biometric Enrollment Kiosk</h2>
-        <p className="text-sm text-slate-500 mt-1">Register or update employee facial recognition descriptors securely from IT Desk</p>
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight">IT Biometric Enrollment Kiosk</h2>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">Register or update employee facial recognition descriptors securely from IT Desk</p>
       </div>
 
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-xl">
+      <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-sm border border-slate-200 w-full max-w-xl">
         <div className="flex items-center mb-6 pb-4 border-b border-slate-100">
-          <div className="bg-[#084e8d]/10 p-2.5 rounded-xl mr-3">
+          <div className="bg-[#084e8d]/10 p-2.5 rounded-xl mr-3 flex-shrink-0">
             <UserCheck className="text-[#084e8d]" size={24} />
           </div>
-          <h3 className="text-lg font-bold text-slate-800">Select Employee for Enrollment</h3>
+          <h3 className="text-base sm:text-lg font-bold text-slate-800 leading-tight">Select Employee for Enrollment</h3>
         </div>
 
         <div className="space-y-6">
@@ -171,9 +171,9 @@ export default function ITFaceRegistration() {
           <button 
             onClick={startCamera}
             disabled={!modelsLoaded || users.length === 0}
-            className="w-full py-3.5 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-xl shadow-lg shadow-[#084e8d]/20 transition-all flex justify-center items-center"
+            className="w-full py-3.5 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-xl shadow-lg shadow-[#084e8d]/20 transition-all flex justify-center items-center text-sm sm:text-base"
           >
-            <Camera className="mr-2" size={20} /> Open IT Kiosk Camera & Capture
+            <Camera className="mr-2 flex-shrink-0" size={20} /> Open IT Kiosk Camera & Capture
           </button>
         </div>
       </div>
@@ -181,19 +181,19 @@ export default function ITFaceRegistration() {
       {/* Camera Modal */}
       {showCameraModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative border border-slate-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 relative border border-slate-200">
             <button onClick={stopCamera} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 p-2 rounded-full">
               <X size={20} />
             </button>
 
-            <h3 className="text-xl font-bold text-[#084e8d] mb-2 flex items-center">
-              <Camera className="mr-2" size={22} /> IT Facial Enrollment
+            <h3 className="text-lg sm:text-xl font-bold text-[#084e8d] mb-2 flex items-center pr-8">
+              <Camera className="mr-2 flex-shrink-0" size={22} /> IT Facial Enrollment
             </h3>
             <p className="text-xs text-slate-500 mb-4">{faceStatusMsg}</p>
 
-            <div className="relative w-full h-72 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shadow-inner mb-6">
+            <div className="relative w-full h-64 sm:h-72 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shadow-inner mb-6">
               {cameraLoading && (
-                <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50">
+                <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50 text-sm">
                   <Loader2 className="animate-spin mr-2" size={24} /> Starting Camera...
                 </div>
               )}
@@ -203,7 +203,7 @@ export default function ITFaceRegistration() {
             <button 
               onClick={captureAndRegisterFace}
               disabled={apiLoading || cameraLoading}
-              className="w-full py-3 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-xl shadow-lg shadow-[#084e8d]/20 transition-all flex justify-center items-center"
+              className="w-full py-3 bg-[#084e8d] hover:bg-[#063a6b] text-white font-bold rounded-xl shadow-lg shadow-[#084e8d]/20 transition-all flex justify-center items-center text-sm sm:text-base"
             >
               {apiLoading ? <Loader2 className="animate-spin mr-2" size={20} /> : <ShieldCheck className="mr-2" size={20} />}
               {apiLoading ? 'Registering Face...' : 'Register Face in Database'}

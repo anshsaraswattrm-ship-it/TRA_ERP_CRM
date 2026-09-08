@@ -56,7 +56,7 @@ export default function UserAccounts() {
       else if (role === 'Team Leader') roleShort = 'TL';
       else if (role === 'BDE LEVEL1') roleShort = 'BDE-LV1'; 
       else if (role === 'BDE LEVEL2') roleShort = 'BDE-LV2';
-      else if (role === 'Receptionist') roleShort = 'REC'; // ✅ Added Receptionist Short Code
+      else if (role === 'Receptionist') roleShort = 'REC';
 
       const currentYear = new Date().getFullYear();
       const sequenceNumber = String(usersList.length + 1).padStart(3, '0');
@@ -93,7 +93,6 @@ export default function UserAccounts() {
     } finally { setLoading(false); }
   };
 
-  // OPEN EDIT MODAL (With God Mode Protection)
   const openEditModal = (user) => {
     if (user.employeeId === 'RA-001-ADMIN-2026') {
       showPopup('error', "Action Denied! Master Super Admin details cannot be modified.");
@@ -107,7 +106,6 @@ export default function UserAccounts() {
     setEditPassword(''); 
   };
 
-  // SUBMIT EDIT
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
@@ -143,7 +141,6 @@ export default function UserAccounts() {
     }
   };
 
-  // DELETE USER (With God Mode Protection)
   const handleDeleteClick = (dbId, employeeId) => {
     if(employeeId === 'RA-001-ADMIN-2026') {
       showPopup('error', "Action Denied! Cannot delete the Master System Admin.");
@@ -172,7 +169,7 @@ export default function UserAccounts() {
       
       {/* NOTIFICATION POPUP */}
       {popup.show && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform transition-all">
             <div className="flex flex-col items-center text-center">
               {popup.type === 'success' && <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-4"><CheckCircle size={28} /></div>}
@@ -197,16 +194,16 @@ export default function UserAccounts() {
 
       {/* EDIT USER MODAL */}
       {editModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="bg-[#084e8d] px-6 py-4 flex items-center justify-between">
-              <h3 className="text-white font-bold tracking-wide">Edit: {editModal.user?.employeeId}</h3>
-              <button onClick={() => setEditModal({ show: false, user: null })} className="text-white/80 hover:text-white">
+              <h3 className="text-white font-bold tracking-wide truncate pr-2">Edit: {editModal.user?.employeeId}</h3>
+              <button onClick={() => setEditModal({ show: false, user: null })} className="text-white/80 hover:text-white flex-shrink-0">
                 <X size={20} />
               </button>
             </div>
             
-            <form onSubmit={handleUpdateUser} className="p-6 space-y-4">
+            <form onSubmit={handleUpdateUser} className="p-4 sm:p-6 space-y-4">
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Full Name</label>
                 <input required type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="block w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#084e8d]/20 outline-none" />
@@ -225,7 +222,7 @@ export default function UserAccounts() {
                   <option value="Team Leader">Team Leader</option>
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
-                  <option value="Receptionist">Receptionist</option> {/* ✅ Added Receptionist to Edit Modal */}
+                  <option value="Receptionist">Receptionist</option>
                 </select>
               </div>
 
@@ -235,8 +232,8 @@ export default function UserAccounts() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setEditModal({ show: false, user: null })} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-200">Cancel</button>
-                <button type="submit" disabled={isUpdating} className="flex-1 px-4 py-2 bg-[#084e8d] text-white rounded-lg text-sm font-semibold hover:bg-[#063a6b]">
+                <button type="button" onClick={() => setEditModal({ show: false, user: null })} className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-200">Cancel</button>
+                <button type="submit" disabled={isUpdating} className="flex-1 px-4 py-2.5 bg-[#084e8d] text-white rounded-lg text-sm font-semibold hover:bg-[#063a6b]">
                   {isUpdating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
@@ -246,22 +243,22 @@ export default function UserAccounts() {
       )}
 
       {/* Main Content Layout */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-extrabold text-[#084e8d] tracking-tight">User Accounts Management</h2>
-        <p className="text-sm text-slate-500 mt-2">Provision and manage employee system credentials securely.</p>
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight">User Accounts Management</h2>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">Provision and manage employee system credentials securely.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         
         {/* LEFT COLUMN: Create User Form */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden sticky top-6">
-            <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center">
-              <UserPlus className="text-[#084e8d] mr-2" size={20} />
-              <h3 className="text-[15px] font-semibold text-slate-800 uppercase tracking-wider">Create New User</h3>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden lg:sticky lg:top-6">
+            <div className="bg-slate-50/50 px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center">
+              <UserPlus className="text-[#084e8d] mr-2 flex-shrink-0" size={20} />
+              <h3 className="text-sm sm:text-[15px] font-semibold text-slate-800 uppercase tracking-wider">Create New User</h3>
             </div>
             
-            <form onSubmit={handleCreateAccount} className="p-6 space-y-5">
+            <form onSubmit={handleCreateAccount} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Full Name</label>
                 <div className="relative">
@@ -287,7 +284,7 @@ export default function UserAccounts() {
                   <option value="Team Leader">Team Leader</option>
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
-                  <option value="Receptionist">Receptionist</option> {/* ✅ Added Receptionist to Create Form */}
+                  <option value="Receptionist">Receptionist</option>
                 </select>
               </div>
 
@@ -314,11 +311,11 @@ export default function UserAccounts() {
 
         {/* RIGHT COLUMN: Active Users List */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden h-full min-h-[500px]">
-            <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden h-full min-h-[400px] sm:min-h-[500px]">
+            <div className="bg-slate-50/50 px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center">
-                <Users className="text-[#084e8d] mr-2" size={20} />
-                <h3 className="text-[15px] font-semibold text-slate-800 uppercase tracking-wider">Active System Users</h3>
+                <Users className="text-[#084e8d] mr-2 flex-shrink-0" size={20} />
+                <h3 className="text-sm sm:text-[15px] font-semibold text-slate-800 uppercase tracking-wider">Active System Users</h3>
               </div>
               <span className="bg-[#084e8d]/10 text-[#084e8d] py-1 px-3 rounded-full text-xs font-bold">Total: {usersList.length}</span>
             </div>
@@ -327,10 +324,10 @@ export default function UserAccounts() {
               <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Employee ID</th>
-                    <th className="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">User Details</th>
-                    <th className="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-3 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Employee ID</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">User Details</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Role</th>
+                    <th className="px-4 sm:px-6 py-3 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
@@ -341,24 +338,22 @@ export default function UserAccounts() {
                   ) : (
                     usersList.map((user) => (
                       <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-xs font-bold font-mono">{user.employeeId}</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-sm font-semibold text-slate-800">{user.name}</span><span className="text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><span className="px-2 sm:px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] sm:text-xs font-bold font-mono">{user.employeeId}</span></td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-xs sm:text-sm font-semibold text-slate-800">{user.name}</span><span className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold inline-block ${
                             user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : 
                             user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : 
                             user.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 
-                            user.role === 'Receptionist' ? 'bg-teal-100 text-teal-700' : // ✅ Added distinct color logic for Receptionist
+                            user.role === 'Receptionist' ? 'bg-teal-100 text-teal-700' : 
                             'bg-emerald-100 text-emerald-700'
                           }`}>
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end gap-2">
-                            {/* Edit Button */}
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end gap-1.5 sm:gap-2">
                             <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-800 bg-white border border-slate-200 hover:border-blue-300 p-1.5 rounded-md shadow-sm transition-colors" title="Edit Details"><Edit2 size={16} /></button>
-                            {/* Delete Button */}
                             <button onClick={() => handleDeleteClick(user._id, user.employeeId)} className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white border border-slate-200 hover:border-[#e9272e]/30 p-1.5 rounded-md shadow-sm transition-colors" title="Revoke Access"><Trash2 size={16} /></button>
                           </div>
                         </td>

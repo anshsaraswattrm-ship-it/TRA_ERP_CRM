@@ -93,17 +93,17 @@ export default function AuditTrail() {
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-12 pt-4 relative">
       
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-[#084e8d] tracking-tight flex items-center">
-            <Activity className="mr-3 text-[#084e8d]" size={28} /> Activity Audit Trail
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight flex items-center">
+            <Activity className="mr-2 sm:mr-3 text-[#084e8d]" size={24} className="sm:w-7 sm:h-7 w-6 h-6" /> Activity Audit Trail
           </h2>
-          <p className="text-sm text-slate-500 mt-1">Real-time security log tracking every employee action, edit, and state change.</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Real-time security log tracking every employee action, edit, and state change.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button 
             onClick={() => alert('Logs refreshed successfully.')}
-            className="flex items-center gap-2 bg-white border border-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+            className="flex items-center justify-center w-full sm:w-auto gap-2 bg-white border border-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
           >
             <RefreshCw size={16} /> Refresh Stream
           </button>
@@ -114,7 +114,7 @@ export default function AuditTrail() {
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         
         {/* Search Bar */}
-        <div className="relative w-full md:w-96">
+        <div className="relative w-full md:w-96 flex-shrink-0">
           <Search className="absolute left-4 top-3.5 text-slate-400" size={18} />
           <input 
             type="text" 
@@ -125,14 +125,14 @@ export default function AuditTrail() {
           />
         </div>
 
-        {/* Module Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          <Filter size={16} className="text-slate-400 mr-1 hidden sm:block" />
+        {/* Module Filter Pills (Swipeable on Mobile) */}
+        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <Filter size={16} className="text-slate-400 mr-1 hidden sm:block flex-shrink-0" />
           {['All', 'Student CRM', 'Attendance', 'Payroll Engine', 'Leave Action Center', 'User Accounts'].map((mod) => (
             <button
               key={mod}
               onClick={() => setFilterModule(mod)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start flex-shrink-0 ${
                 filterModule === mod 
                 ? 'bg-[#084e8d] text-white shadow-md shadow-[#084e8d]/20' 
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -150,49 +150,49 @@ export default function AuditTrail() {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-[#084e8d] text-white">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Log ID & Timestamp</th>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Employee Info</th>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Module</th>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Action Executed</th>
-                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Target ID / Record</th>
-                <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Inspect</th>
+                <th className="px-4 sm:px-6 py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Log ID & Timestamp</th>
+                <th className="px-4 sm:px-6 py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Employee Info</th>
+                <th className="px-4 sm:px-6 py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Module</th>
+                <th className="px-4 sm:px-6 py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Action Executed</th>
+                <th className="px-4 sm:px-6 py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Target ID / Record</th>
+                <th className="px-4 sm:px-6 py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider">Inspect</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
               {filteredLogs.length > 0 ? (
                 filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="font-mono text-xs font-bold text-[#084e8d]">{log.id}</span>
-                        <span className="text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1">
+                        <span className="text-[11px] sm:text-xs font-medium text-slate-500 mt-0.5 flex items-center gap-1">
                           <Clock size={12} /> {log.timestamp}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <span className="font-bold text-slate-800">{log.employeeName}</span>
-                        <span className="text-xs text-slate-500">{log.employeeId} • <strong className="text-slate-700">{log.role}</strong></span>
+                        <span className="font-bold text-slate-800 text-xs sm:text-sm">{log.employeeName}</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500">{log.employeeId} • <strong className="text-slate-700">{log.role}</strong></span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border border-slate-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <span className="px-2.5 sm:px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] sm:text-xs font-bold border border-slate-200">
                         {log.module}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-800">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-slate-800">
                       {log.action}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-mono text-xs bg-blue-50 text-[#084e8d] px-2.5 py-1 rounded border border-blue-100 font-bold">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <span className="font-mono text-[10px] sm:text-xs bg-blue-50 text-[#084e8d] px-2 py-1 sm:px-2.5 sm:py-1 rounded border border-blue-100 font-bold">
                         {log.targetId}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right">
                       <button 
                         onClick={() => setSelectedLog(log)}
-                        className="inline-flex items-center gap-1 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl font-bold text-xs shadow-sm transition-all"
+                        className="inline-flex items-center gap-1 px-3 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl font-bold text-[10px] sm:text-xs shadow-sm transition-all"
                       >
                         <Eye size={14} className="text-[#084e8d]" /> Details
                       </button>
@@ -214,63 +214,63 @@ export default function AuditTrail() {
       {/* Modal / Slide-over for Log Inspection */}
       {selectedLog && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
             
-            <div className="flex justify-between items-start pb-4 border-b border-slate-100 mb-6">
-              <div>
-                <span className="font-mono text-xs font-bold text-[#084e8d] bg-blue-50 px-2.5 py-1 rounded border border-blue-100">
+            <div className="flex justify-between items-start pb-4 border-b border-slate-100 mb-4 sm:mb-6">
+              <div className="pr-4">
+                <span className="font-mono text-[10px] sm:text-xs font-bold text-[#084e8d] bg-blue-50 px-2.5 py-1 rounded border border-blue-100 break-all">
                   {selectedLog.id}
                 </span>
-                <h3 className="text-xl font-extrabold text-slate-900 mt-2">{selectedLog.action}</h3>
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-2 leading-tight">{selectedLog.action}</h3>
               </div>
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-xl"
+                className="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-xl flex-shrink-0"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-4 text-sm">
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div className="space-y-4 text-xs sm:text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">User</span>
-                  <strong className="text-slate-800">{selectedLog.employeeName}</strong> ({selectedLog.employeeId})
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest block">User</span>
+                  <strong className="text-slate-800 break-words">{selectedLog.employeeName}</strong> <span className="whitespace-nowrap">({selectedLog.employeeId})</span>
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Module</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Module</span>
                   <strong className="text-slate-800">{selectedLog.module}</strong>
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Timestamp</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Timestamp</span>
                   <span className="text-slate-700">{selectedLog.timestamp}</span>
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">IP Address</span>
-                  <span className="font-mono text-xs text-slate-700">{selectedLog.ipAddress}</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest block">IP Address</span>
+                  <span className="font-mono text-[11px] sm:text-xs text-slate-700">{selectedLog.ipAddress}</span>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Recorded State Changes</h4>
+                <h4 className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Recorded State Changes</h4>
                 {selectedLog.changes.map((change, idx) => (
-                  <div key={idx} className="bg-slate-900 text-white p-4 rounded-xl font-mono text-xs space-y-2">
+                  <div key={idx} className="bg-slate-900 text-white p-3 sm:p-4 rounded-xl font-mono text-[10px] sm:text-xs space-y-2 overflow-x-auto custom-scrollbar">
                     <div className="text-slate-400 border-b border-slate-800 pb-1">Field: {change.field}</div>
-                    <div className="flex justify-between text-red-400">
-                      <span>[-] Old:</span> <span>{change.oldVal}</span>
+                    <div className="flex flex-col sm:flex-row sm:justify-between text-red-400 gap-1 sm:gap-4">
+                      <span className="flex-shrink-0">[-] Old:</span> <span className="break-words">{change.oldVal}</span>
                     </div>
-                    <div className="flex justify-between text-green-400">
-                      <span>[+] New:</span> <span>{change.newVal}</span>
+                    <div className="flex flex-col sm:flex-row sm:justify-between text-green-400 gap-1 sm:gap-4 mt-1 sm:mt-0">
+                      <span className="flex-shrink-0">[+] New:</span> <span className="break-words">{change.newVal}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-slate-100 flex justify-end">
+            <div className="mt-6 sm:mt-8 pt-4 border-t border-slate-100 flex justify-end">
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="bg-[#084e8d] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-[#063a6b] transition-all"
+                className="w-full sm:w-auto bg-[#084e8d] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-[#063a6b] transition-all"
               >
                 Close Inspection
               </button>
