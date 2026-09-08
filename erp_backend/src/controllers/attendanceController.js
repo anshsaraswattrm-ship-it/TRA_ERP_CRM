@@ -1,7 +1,7 @@
 const Attendance = require('../models/Attendance');
-const jwt = require('jsonwebtoken'); // JWT add kiya for dynamic expiration
+const jwt = require('jsonwebtoken');
 
-// Helper to get current formatted date strictly in IST (e.g., "24 Aug 2026")
+// Helper to get current formatted date strictly in IST
 const getFormattedDate = () => {
   return new Date().toLocaleDateString('en-GB', { 
     timeZone: 'Asia/Kolkata',
@@ -11,7 +11,7 @@ const getFormattedDate = () => {
   });
 };
 
-// Helper to get current time strictly in IST (e.g., "09:30 AM")
+// Helper to get current time strictly in IST
 const getCurrentTime = () => {
   return new Date().toLocaleTimeString('en-US', { 
     timeZone: 'Asia/Kolkata',
@@ -37,15 +37,17 @@ const clockIn = async (req, res) => {
 
     const currentTime = getCurrentTime();
     
-    // Logic: Convert server time to IST to check if past 10:00 AM
+    // IST Time breakdown for Late calculation (Cutoff: 10:05 AM)
     const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const currentHour = nowIST.getHours();
     const currentMinute = nowIST.getMinutes();
     
-    const status = (currentHour > 10 || (currentHour === 10 && currentMinute > 0)) ? 'Late' : 'Present';
+    // LATE LOGIC: After 10:05 AM is Late
+    const status = (currentHour > 10 || (currentHour === 10 && currentMinute > 5)) ? 'Late' : 'Present';
 
     let attendance = existingAttendance;
     if (attendance) {
+      // If cron job previously marked them 'Absent', update it to Present/Late on actual clock-in
       attendance.clockInTime = currentTime;
       attendance.status = status;
       attendance.faceVerified = true;
@@ -69,7 +71,7 @@ const clockIn = async (req, res) => {
   }
 };
 
-// @desc    Mark Clock-Out Attendance
+// @desc    Mark Clock-Out Attendance (Simple & Clean, No Overtime)
 // @route   POST /api/attendance/clock-out
 const clockOut = async (req, res) => {
   try {
@@ -119,10 +121,9 @@ const getAllLogs = async (req, res) => {
 // @route   GET /api/attendance/reception-qr
 const getReceptionQR = async (req, res) => {
   try {
-    // Generate a 30-second expiring JWT token
     const token = jwt.sign(
       { type: 'RAPTOR_OFFICE_QR', timestamp: Date.now() },
-      process.env.JWT_SECRET || 'raptor_secret_key', // Fallback incase .env is missing
+      process.env.JWT_SECRET || 'raptor_secret_key',
       { expiresIn: '30s' }
     );
     res.json({ token });
@@ -141,7 +142,6 @@ const verifyQRCode = async (req, res) => {
       return res.status(400).json({ message: 'No QR code provided!' });
     }
 
-    // Verify token & check expiry
     const decoded = jwt.verify(qrToken, process.env.JWT_SECRET || 'raptor_secret_key');
     
     if (decoded.type !== 'RAPTOR_OFFICE_QR') {
@@ -150,7 +150,6 @@ const verifyQRCode = async (req, res) => {
 
     res.json({ message: 'Office QR Verified Successfully!' });
   } catch (error) {
-    // If token is expired or invalid
     return res.status(400).json({ message: 'QR Code Expired! Please scan the latest one on TV.' });
   }
 };

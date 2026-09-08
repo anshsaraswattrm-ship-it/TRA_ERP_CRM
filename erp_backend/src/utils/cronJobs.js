@@ -1,8 +1,8 @@
 const cron = require('node-cron');
-const Attendance = require('../models/Attendance'); // ✅ FIX: Added ../
-const User = require('../models/User');             // ✅ FIX: Added ../
+const Attendance = require('../models/Attendance');
+const User = require('../models/User'); 
 
-// Same bulletproof date formatter
+// ✅ Same 100% Bulletproof Date Formatter (Matches Frontend & Controller)
 const getFormattedDate = () => {
   const dateObj = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   const day = String(dateObj.getDate()).padStart(2, '0');
@@ -25,11 +25,11 @@ const startAttendanceCron = () => {
       });
 
       for (let emp of allEmployees) {
-        // Check karo ki kya is employee ka aaj ka koi record hai
-        const isPresent = await Attendance.findOne({ employee: emp._id, date: today });
+        // Check karo ki kya is employee ka aaj ka koi record pehle se hai?
+        const existingLog = await Attendance.findOne({ employee: emp._id, date: today });
 
-        // Agar record nahi mila, matlab ye absent tha
-        if (!isPresent) {
+        if (!existingLog) {
+          // Agar koi record nahi hai, toh Absent mark kardo
           await Attendance.create({
             employee: emp._id,
             employeeId: emp.employeeId,
