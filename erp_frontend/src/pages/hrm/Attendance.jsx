@@ -12,7 +12,7 @@ export default function Attendance() {
   const isReceptionist = userRole === 'Receptionist';
   const isEmployee = !isSuperAdmin && !isFounder && !isReceptionist;
 
-  // ✅ Default to admin view for Receptionist, Admin, Founder
+  // Defaults: Admin view for Super Admin, Founder, Receptionist. Employee view for rest.
   const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder || isReceptionist) ? 'admin' : 'employee');
 
   const [myLogs, setMyLogs] = useState([]);
@@ -37,6 +37,7 @@ export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
+    // Generate Today + Last 4 Days (Total 5 Days)
     const dates = [];
     for (let i = 0; i < 5; i++) {
       const d = new Date();
@@ -44,7 +45,7 @@ export default function Attendance() {
       dates.push(d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }));
     }
     setAvailableDates(dates);
-    setSelectedDate(dates[0]);
+    setSelectedDate(dates[0]); // Default to Today
 
     const loadModels = async () => {
       try {
@@ -94,14 +95,13 @@ export default function Attendance() {
         const data = await res.json();
         setAllEmployeesLogs(data);
       } else {
-        console.error("Failed to fetch. Might be a permission issue in backend for this role.");
+        console.error("Failed to fetch admin logs. Check backend permissions.");
       }
     } catch (error) {
       console.error("Failed to fetch admin logs", error);
     }
   };
 
-  // ✅ Fixed UseEffect: Always fetch my logs if token exists, regardless of view
   useEffect(() => {
     if (userInfo?.token) {
       fetchMyLogs();
@@ -114,10 +114,14 @@ export default function Attendance() {
     }
   }, [viewRole, selectedDate, userInfo?.token]);
 
+  // Filters
   const filteredAdminLogs = allEmployeesLogs.filter(log => 
     log.employee?.name?.toLowerCase().includes(adminSearch.toLowerCase()) || 
     log.employeeId?.toLowerCase().includes(adminSearch.toLowerCase())
   );
+
+  // Filter My Logs to only show the last 5 days
+  const filteredMyLogs = myLogs.filter(log => availableDates.includes(log.date));
 
   const startCamera = () => {
     setShowCameraModal(true);
@@ -312,8 +316,9 @@ export default function Attendance() {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight">Attendance System</h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
-        {/* ✅ FIXED: Toggle buttons available to Super Admin, Founder AND Receptionist */}
-        {(isSuperAdmin || isFounder || isReceptionist) && (
+        
+        {/* ✅ FIXED: Toggle Buttons ONLY visible for Super Admin */}
+        {isSuperAdmin && (
           <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
               onClick={() => setViewRole('employee')}
@@ -331,6 +336,7 @@ export default function Attendance() {
         )}
       </div>
 
+      {/* EMPLOYEE VIEW - Visible only if viewRole === 'employee' (Employees & toggled Super Admins) */}
       {viewRole === 'employee' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-4">
@@ -471,19 +477,20 @@ export default function Attendance() {
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-slate-800">My Attendance Log</h3>
               </div>
-              <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <div className="w-full overflow-x-auto rounded-xl border border-slate-200">
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-[#084e8d] text-white">
                     <tr>
-                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Date</th>
-                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock In</th>
-                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock Out</th>
-                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider">Status</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Date</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Clock In</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Clock Out</th>
+                      <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Status</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
-                    {myLogs.length > 0 ? (
-                      myLogs.map((log) => (
+                    {/* ✅ FIXED: Displaying filteredMyLogs (last 5 days) */}
+                    {filteredMyLogs.length > 0 ? (
+                      filteredMyLogs.map((log) => (
                         <tr key={log._id} className="hover:bg-slate-50 transition-colors">
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-800">{log.date}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockInTime}</td>
@@ -500,7 +507,7 @@ export default function Attendance() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="px-6 py-8 text-center text-xs sm:text-sm text-slate-500">No attendance records found.</td>
+                        <td colSpan="4" className="px-6 py-8 text-center text-xs sm:text-sm text-slate-500">No attendance records found for the last 5 days.</td>
                       </tr>
                     )}
                   </tbody>
@@ -511,9 +518,9 @@ export default function Attendance() {
         </div>
       )}
 
-      {/* ✅ ADMIN / RECEPTIONIST VIEW */}
+      {/* ✅ ADMIN / RECEPTIONIST VIEW - Company Logs */}
       {viewRole === 'admin' && (isSuperAdmin || isFounder || isReceptionist) && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 relative w-full">
           <div className="sticky top-0 z-30 bg-slate-50 border-b border-slate-200 p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl shadow-sm">
             <h3 className="text-lg sm:text-xl font-bold text-[#084e8d] flex items-center">
               <CalendarDays className="mr-2 flex-shrink-0" size={24} /> Company Attendance Log
@@ -541,15 +548,15 @@ export default function Attendance() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-b-2xl">
+          <div className="w-full overflow-x-auto rounded-b-2xl custom-scrollbar">
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-[#084e8d] text-white">
                 <tr>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Employee Info</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Designation</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock In</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider">Clock Out</th>
-                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider">Status</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Employee Info</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Designation</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Clock In</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Clock Out</th>
+                  <th className="px-4 sm:px-6 py-3 sm:py-4 text-right text-[11px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
