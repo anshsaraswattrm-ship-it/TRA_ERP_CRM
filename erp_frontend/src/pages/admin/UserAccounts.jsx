@@ -6,7 +6,8 @@ export default function UserAccounts() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
-  const [generatedId, setGeneratedId] = useState('');
+  // ✅ Changed generatedId state to manual employeeId state
+  const [employeeIdInput, setEmployeeIdInput] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [usersList, setUsersList] = useState([]);
@@ -47,29 +48,15 @@ export default function UserAccounts() {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  // Custom ID Generation Logic (101/SEP/RAPTOR/26)
-  useEffect(() => {
-    if (role) {
-      const currentYearShort = String(new Date().getFullYear()).slice(-2); // "26"
-      const monthShort = new Date().toLocaleString('en-US', { month: 'short' }).toUpperCase(); // "SEP"
-      
-      const sequenceNumber = 101 + usersList.length; 
-      
-      // ✅ FIX: Replaced hyphens (-) with slashes (/)
-      setGeneratedId(`${sequenceNumber}/${monthShort}/RAPTOR/${currentYearShort}`);
-    } else {
-      setGeneratedId('');
-    }
-  }, [role, usersList.length]);
-
   const handleCreateAccount = async (e) => {
     e.preventDefault();
-    if (!name || !email || !role || !password) return;
+    if (!name || !email || !role || !password || !employeeIdInput) return;
     setLoading(true);
 
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const payload = { employeeId: generatedId, name, email, password, role };
+      // ✅ Sending the manually entered employee ID
+      const payload = { employeeId: employeeIdInput, name, email, password, role };
       const response = await fetch('https://tra-erp-crm.onrender.com/api/auth/create-employee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo?.token}` },
@@ -80,7 +67,7 @@ export default function UserAccounts() {
       if (response.ok) {
         showPopup('success', `Account for ${name} provisioned!`);
         fetchUsers(); 
-        setName(''); setEmail(''); setRole(''); setPassword('');
+        setName(''); setEmail(''); setRole(''); setPassword(''); setEmployeeIdInput('');
       } else {
         showPopup('error', data.message || 'Failed to create user.');
       }
@@ -287,8 +274,16 @@ export default function UserAccounts() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Generated ID</label>
-                <input type="text" value={generatedId} readOnly placeholder="Select role to generate ID" className="block w-full px-3 py-2 bg-[#084e8d]/5 border border-[#084e8d]/20 rounded-lg text-sm font-bold text-[#084e8d] outline-none cursor-not-allowed" />
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Employee ID (Manual Entry)</label>
+                {/* ✅ Changed to a fully editable text input */}
+                <input 
+                  required 
+                  type="text" 
+                  value={employeeIdInput} 
+                  onChange={(e) => setEmployeeIdInput(e.target.value)} 
+                  placeholder="e.g. 101/SEP/RAPTOR/26" 
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#084e8d]/20 outline-none" 
+                />
               </div>
 
               <div>
