@@ -24,8 +24,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      // ✅ Added 'Receptionist' below
-      enum: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist'],
+      // ✅ FIX: Added 'Raptor Marketing' to the allowed roles list
+      enum: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist', 'Raptor Marketing'],
       default: 'BDE LEVEL1'
     },
     faceDescriptor: {
@@ -45,7 +45,7 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 userSchema.pre('save', async function () {
-  // Agar password change nahi hua, toh seedha return kar do, next() ki zaroorat hi nahi hai async function mein!
+  // Agar password change nahi hua, toh seedha return kar do
   if (!this.isModified('password')) {
     return;
   }

@@ -47,7 +47,8 @@ export default function Sidebar({ closeMobile }) {
       name: 'Attendance', 
       path: '/attendance', 
       icon: UserCheck, 
-      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist'] 
+      // ✅ Added 'Raptor Marketing' HERE only so they just see this tab
+      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist', 'Raptor Marketing'] 
     },
     { 
       name: 'Leave Action Center', 

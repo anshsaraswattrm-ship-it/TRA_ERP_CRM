@@ -47,14 +47,12 @@ export default function UserAccounts() {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  // ✅ NEW: Custom ID Generation Logic (e.g., 101-SEP-RAPTOR-26)
+  // Custom ID Generation Logic (101-SEP-RAPTOR-26)
   useEffect(() => {
     if (role) {
       const currentYearShort = String(new Date().getFullYear()).slice(-2); // "26"
       const monthShort = new Date().toLocaleString('en-US', { month: 'short' }).toUpperCase(); // "SEP"
       
-      // Sequence starts from 101. Assuming first user is Super Admin, rest follow sequence.
-      // Adjusting count if Super Admin takes up a space or not. Safe logic:
       const sequenceNumber = 101 + usersList.length; 
       
       setGeneratedId(`${sequenceNumber}-${monthShort}-RAPTOR-${currentYearShort}`);
@@ -91,7 +89,6 @@ export default function UserAccounts() {
   };
 
   const openEditModal = (user) => {
-    // Check against Master Admin ID (Wait, we need to update this logic if ID changes!)
     if (user.role === 'Super Admin') {
       showPopup('error', "Action Denied! Master Super Admin details cannot be modified.");
       return;
@@ -221,6 +218,8 @@ export default function UserAccounts() {
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
                   <option value="Receptionist">Receptionist</option>
+                  {/* ✅ Added Raptor Marketing to Edit Modal */}
+                  <option value="Raptor Marketing">Raptor Marketing</option>
                 </select>
               </div>
 
@@ -283,6 +282,8 @@ export default function UserAccounts() {
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
                   <option value="Receptionist">Receptionist</option>
+                  {/* ✅ Added Raptor Marketing to Create User Dropdown */}
+                  <option value="Raptor Marketing">Raptor Marketing</option>
                 </select>
               </div>
 
@@ -339,11 +340,13 @@ export default function UserAccounts() {
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><span className="px-2 sm:px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] sm:text-xs font-bold font-mono">{user.employeeId}</span></td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-xs sm:text-sm font-semibold text-slate-800">{user.name}</span><span className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          {/* ✅ Added Custom color badge for Raptor Marketing */}
                           <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold inline-block ${
                             user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : 
                             user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : 
                             user.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 
                             user.role === 'Receptionist' ? 'bg-teal-100 text-teal-700' : 
+                            user.role === 'Raptor Marketing' ? 'bg-pink-100 text-pink-700' : 
                             'bg-emerald-100 text-emerald-700'
                           }`}>
                             {user.role}
