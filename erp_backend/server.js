@@ -39,7 +39,8 @@ app.use(express.json());
 const seedAdmin = async () => {
   try {
     const adminEmail = 'ansh.saraswat.trm@gmail.com';
-    const newAdminId = '100-SEP-RAPTOR-26'; // ✅ New Format applied
+    // ✅ FORMAT CHANGED TO SLASHES (/)
+    const newAdminId = '100/SEP/RAPTOR/26'; 
 
     // Check by email so we don't create duplicate admins
     const adminExists = await User.findOne({ email: adminEmail });

@@ -47,7 +47,7 @@ export default function UserAccounts() {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  // Custom ID Generation Logic (101-SEP-RAPTOR-26)
+  // Custom ID Generation Logic (101/SEP/RAPTOR/26)
   useEffect(() => {
     if (role) {
       const currentYearShort = String(new Date().getFullYear()).slice(-2); // "26"
@@ -55,7 +55,8 @@ export default function UserAccounts() {
       
       const sequenceNumber = 101 + usersList.length; 
       
-      setGeneratedId(`${sequenceNumber}-${monthShort}-RAPTOR-${currentYearShort}`);
+      // ✅ FIX: Replaced hyphens (-) with slashes (/)
+      setGeneratedId(`${sequenceNumber}/${monthShort}/RAPTOR/${currentYearShort}`);
     } else {
       setGeneratedId('');
     }
@@ -218,7 +219,6 @@ export default function UserAccounts() {
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
                   <option value="Receptionist">Receptionist</option>
-                  {/* ✅ Added Raptor Marketing to Edit Modal */}
                   <option value="Raptor Marketing">Raptor Marketing</option>
                 </select>
               </div>
@@ -282,7 +282,6 @@ export default function UserAccounts() {
                   <option value="BDE LEVEL1">BDE LEVEL1</option>
                   <option value="BDE LEVEL2">BDE LEVEL2</option>
                   <option value="Receptionist">Receptionist</option>
-                  {/* ✅ Added Raptor Marketing to Create User Dropdown */}
                   <option value="Raptor Marketing">Raptor Marketing</option>
                 </select>
               </div>
@@ -340,7 +339,6 @@ export default function UserAccounts() {
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><span className="px-2 sm:px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] sm:text-xs font-bold font-mono">{user.employeeId}</span></td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-xs sm:text-sm font-semibold text-slate-800">{user.name}</span><span className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                          {/* ✅ Added Custom color badge for Raptor Marketing */}
                           <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold inline-block ${
                             user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : 
                             user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : 

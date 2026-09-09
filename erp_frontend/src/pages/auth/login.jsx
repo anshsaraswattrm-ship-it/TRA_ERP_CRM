@@ -34,7 +34,7 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem('userInfo', JSON.stringify(data));
         
-        // ✅ NEW: Role-Based Redirect Logic
+        // Role-Based Redirect Logic
         if (data.role === 'Raptor Marketing') {
           navigate('/attendance'); // Sirf inko attendance page pe bhejna hai
         } else {
@@ -97,7 +97,8 @@ export default function Login() {
                 setEmployeeId(e.target.value);
                 setErrorMessage(''); 
               }}
-              placeholder="e.g. 101-SEP-RAPTOR-26"
+              // ✅ FIX: Replaced hyphens (-) with slashes (/)
+              placeholder="e.g. 101/SEP/RAPTOR/26"
               className="block w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#084e8d] focus:border-transparent transition-all shadow-inner" 
             />
           </div>
