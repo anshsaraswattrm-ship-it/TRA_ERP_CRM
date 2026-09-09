@@ -4,13 +4,25 @@ import * as faceapi from 'face-api.js';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
 // ✅ 100% BULLETPROOF DATE FORMATTER
-// Bypass Apple's invisible characters (\u200E) AND Node.js 'Sept' vs 'Sep' mismatches.
 const formatSafeDate = (dateObj) => {
   const day = String(dateObj.getDate()).padStart(2, '0');
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
   const month = months[dateObj.getMonth()];
   const year = dateObj.getFullYear();
   return `${day} ${month} ${year}`;
+};
+
+// ✅ NEW: Helper function for advanced status badge colors
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case 'Present': return 'bg-green-100 text-green-800';
+    case 'Late': return 'bg-amber-100 text-amber-800';
+    case 'Paid Short Leave': return 'bg-indigo-100 text-indigo-800';
+    case 'Paid Half Day': return 'bg-purple-100 text-purple-800';
+    case 'Unpaid Half Day': return 'bg-orange-100 text-orange-800';
+    case 'Absent': return 'bg-[#e9272e]/10 text-[#e9272e]';
+    default: return 'bg-slate-100 text-slate-500';
+  }
 };
 
 export default function Attendance() {
@@ -21,7 +33,6 @@ export default function Attendance() {
   const isFounder = userRole === 'Founder and Director';
   const isReceptionist = userRole === 'Receptionist';
 
-  // Defaults: Admin view for Super Admin, Founder, Receptionist. Employee view for rest.
   const [viewRole, setViewRole] = useState((isSuperAdmin || isFounder || isReceptionist) ? 'admin' : 'employee');
 
   const [myLogs, setMyLogs] = useState([]);
@@ -46,7 +57,6 @@ export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
-    // Generate Today + Last 4 Days (Total 5 Days) using the SAFE formatter
     const dates = [];
     for (let i = 0; i < 5; i++) {
       const d = new Date();
@@ -54,7 +64,7 @@ export default function Attendance() {
       dates.push(formatSafeDate(d));
     }
     setAvailableDates(dates);
-    setSelectedDate(dates[0]); // Default to Today
+    setSelectedDate(dates[0]);
 
     const loadModels = async () => {
       try {
@@ -123,7 +133,6 @@ export default function Attendance() {
     }
   }, [viewRole, selectedDate, userInfo?.token]);
 
-  // Filters
   const filteredAdminLogs = allEmployeesLogs.filter(log => 
     log.employee?.name?.toLowerCase().includes(adminSearch.toLowerCase()) || 
     log.employeeId?.toLowerCase().includes(adminSearch.toLowerCase())
@@ -131,7 +140,6 @@ export default function Attendance() {
 
   const filteredMyLogs = myLogs.filter(log => availableDates.includes(log.date));
 
-  // ✅ Handle Monthly Report CSV Download with "Sept" default
   const handleDownloadMonthlyReport = async () => {
     const employeeIdInput = prompt("Enter Employee ID for monthly report (e.g., RA-003-BDE-LV1-2026):");
     if (!employeeIdInput) return;
@@ -155,14 +163,12 @@ export default function Attendance() {
         return;
       }
 
-      // Convert JSON report to CSV format
       let csvContent = "data:text/csv;charset=utf-8,Date,Employee ID,Name,Role,Clock In,Clock Out,Status\n";
       
       data.report.forEach(row => {
         csvContent += `"${row.date}","${data.employee.employeeId}","${data.employee.name}","${data.employee.role || '-'}","${row.clockInTime}","${row.clockOutTime}","${row.status}"\n`;
       });
 
-      // Trigger browser download
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
@@ -373,7 +379,6 @@ export default function Attendance() {
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Biometric Face Verification & Dynamic QR Access</p>
         </div>
         
-        {/* Toggle Buttons ONLY for Super Admin */}
         {isSuperAdmin && (
           <div className="flex w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
             <button 
@@ -551,10 +556,8 @@ export default function Attendance() {
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockInTime}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockOutTime}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
-                            <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${
-                              log.status === 'Present' ? 'bg-green-100 text-green-800' : 
-                              log.status === 'Late' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500'
-                            }`}>
+                            {/* ✅ Updated with dynamic badge helper */}
+                            <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${getStatusBadgeClass(log.status)}`}>
                               {log.status}
                             </span>
                           </td>
@@ -582,7 +585,6 @@ export default function Attendance() {
             </h3>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto items-center">
-              {/* ✅ Download Monthly Report Button */}
               <button 
                 onClick={handleDownloadMonthlyReport}
                 disabled={apiLoading}
@@ -638,11 +640,8 @@ export default function Attendance() {
                       <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-700">{log.clockInTime}</td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-700">{log.clockOutTime}</td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
-                        <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${
-                          log.status === 'Present' ? 'bg-green-100 text-green-800' : 
-                          log.status === 'Late' ? 'bg-amber-100 text-amber-800' : 
-                          'bg-[#e9272e]/10 text-[#e9272e]'
-                        }`}>
+                        {/* ✅ Updated with dynamic badge helper */}
+                        <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${getStatusBadgeClass(log.status)}`}>
                           {log.status}
                         </span>
                       </td>

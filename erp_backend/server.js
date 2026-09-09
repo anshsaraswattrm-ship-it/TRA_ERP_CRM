@@ -34,23 +34,32 @@ app.use(cors({
 }));
 
 app.use(express.json()); 
-app.use('/api/auth', authRoutes);
 
 // --- HARDCODED SUPER ADMIN SEEDER ---
 const seedAdmin = async () => {
   try {
-    const adminExists = await User.findOne({ employeeId: 'RA-001-ADMIN-2026' });
+    const adminEmail = 'ansh.saraswat.trm@gmail.com';
+    const newAdminId = '100-SEP-RAPTOR-26'; // ✅ New Format applied
+
+    // Check by email so we don't create duplicate admins
+    const adminExists = await User.findOne({ email: adminEmail });
+    
     if (!adminExists) {
       await User.create({
-        employeeId: 'RA-001-ADMIN-2026',
+        employeeId: newAdminId,
         name: 'IT Department',
-        email: 'ansh.saraswat.trm@gmail.com', 
+        email: adminEmail, 
         password: 'Admin@123!@#$%^&*()',
         role: 'Super Admin', 
       });
-      console.log('✅ Hardcoded Master Super Admin Account Created! (ID: RA-001-ADMIN-2026)');
+      console.log(`✅ Hardcoded Master Super Admin Account Created! (ID: ${newAdminId})`);
+    } else if (adminExists.employeeId !== newAdminId) {
+      // ✅ Agar DB mein purani ID hai, toh use update karke nayi ID set kar do
+      adminExists.employeeId = newAdminId;
+      await adminExists.save();
+      console.log(`✅ Super Admin ID updated to new format: ${newAdminId}`);
     } else {
-      console.log('Super Admin account already exists in DB.');
+      console.log(`✅ Super Admin account already exists with ID: ${newAdminId}`);
     }
   } catch (error) {
     console.error('Admin Seeding Error:', error);

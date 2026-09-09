@@ -47,20 +47,17 @@ export default function UserAccounts() {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  // Create User ID Logic
+  // ✅ NEW: Custom ID Generation Logic (e.g., 101-SEP-RAPTOR-26)
   useEffect(() => {
     if (role) {
-      let roleShort = '';
-      if (role === 'Founder and Director') roleShort = 'FN';
-      else if (role === 'Manager') roleShort = 'MN';
-      else if (role === 'Team Leader') roleShort = 'TL';
-      else if (role === 'BDE LEVEL1') roleShort = 'BDE-LV1'; 
-      else if (role === 'BDE LEVEL2') roleShort = 'BDE-LV2';
-      else if (role === 'Receptionist') roleShort = 'REC';
-
-      const currentYear = new Date().getFullYear();
-      const sequenceNumber = String(usersList.length + 1).padStart(3, '0');
-      setGeneratedId(`RA-${sequenceNumber}-${roleShort}-${currentYear}`.toUpperCase());
+      const currentYearShort = String(new Date().getFullYear()).slice(-2); // "26"
+      const monthShort = new Date().toLocaleString('en-US', { month: 'short' }).toUpperCase(); // "SEP"
+      
+      // Sequence starts from 101. Assuming first user is Super Admin, rest follow sequence.
+      // Adjusting count if Super Admin takes up a space or not. Safe logic:
+      const sequenceNumber = 101 + usersList.length; 
+      
+      setGeneratedId(`${sequenceNumber}-${monthShort}-RAPTOR-${currentYearShort}`);
     } else {
       setGeneratedId('');
     }
@@ -94,7 +91,8 @@ export default function UserAccounts() {
   };
 
   const openEditModal = (user) => {
-    if (user.employeeId === 'RA-001-ADMIN-2026') {
+    // Check against Master Admin ID (Wait, we need to update this logic if ID changes!)
+    if (user.role === 'Super Admin') {
       showPopup('error', "Action Denied! Master Super Admin details cannot be modified.");
       return;
     }
@@ -141,12 +139,12 @@ export default function UserAccounts() {
     }
   };
 
-  const handleDeleteClick = (dbId, employeeId) => {
-    if(employeeId === 'RA-001-ADMIN-2026') {
+  const handleDeleteClick = (dbId, userRole) => {
+    if(userRole === 'Super Admin') {
       showPopup('error', "Action Denied! Cannot delete the Master System Admin.");
       return;
     }
-    showPopup('confirm', `Are you sure you want to revoke access for ${employeeId}?`, async () => {
+    showPopup('confirm', `Are you sure you want to revoke access?`, async () => {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const response = await fetch(`https://tra-erp-crm.onrender.com/api/auth/users/${dbId}`, {
@@ -154,7 +152,7 @@ export default function UserAccounts() {
           headers: { Authorization: `Bearer ${userInfo?.token}` }
         });
         if (response.ok) {
-          showPopup('success', `${employeeId} deleted.`);
+          showPopup('success', `User deleted.`);
           fetchUsers(); 
         } else {
           const data = await response.json();
@@ -354,7 +352,7 @@ export default function UserAccounts() {
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-1.5 sm:gap-2">
                             <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-800 bg-white border border-slate-200 hover:border-blue-300 p-1.5 rounded-md shadow-sm transition-colors" title="Edit Details"><Edit2 size={16} /></button>
-                            <button onClick={() => handleDeleteClick(user._id, user.employeeId)} className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white border border-slate-200 hover:border-[#e9272e]/30 p-1.5 rounded-md shadow-sm transition-colors" title="Revoke Access"><Trash2 size={16} /></button>
+                            <button onClick={() => handleDeleteClick(user._id, user.role)} className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white border border-slate-200 hover:border-[#e9272e]/30 p-1.5 rounded-md shadow-sm transition-colors" title="Revoke Access"><Trash2 size={16} /></button>
                           </div>
                         </td>
                       </tr>

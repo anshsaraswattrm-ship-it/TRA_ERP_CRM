@@ -21,13 +21,33 @@ const getCurrentTime = () => {
   });
 };
 
+// Helper to calculate monthly stats for Quota Limits
+const getMonthlyStats = async (userId, monthStr, yearStr) => {
+  const logs = await Attendance.find({ employee: userId });
+  const monthLogs = logs.filter(log => log.date.includes(monthStr) && log.date.includes(yearStr));
+
+  let lateCount = 0;
+  let shortLeaveCount = 0;
+  let paidHalfDayCount = 0;
+
+  monthLogs.forEach(log => {
+    if (log.status === 'Late') lateCount++;
+    if (log.status === 'Paid Short Leave') shortLeaveCount++;
+    if (log.status === 'Paid Half Day') paidHalfDayCount++;
+  });
+
+  return { lateCount, shortLeaveCount, paidHalfDayCount };
+};
+
 // @desc    Mark Clock-In Attendance
 // @route   POST /api/attendance/clock-in
 const clockIn = async (req, res) => {
   try {
     const userId = req.user._id;
     const employeeId = req.user.employeeId;
-    const currentDate = getFormattedDate();
+    
+    const currentDate = getFormattedDate(); // Format: "09 Sept 2026"
+    const [, currentMonth, currentYear] = currentDate.split(' ');
 
     // Check if already clocked in today
     const existingAttendance = await Attendance.findOne({ employee: userId, date: currentDate });
@@ -37,17 +57,44 @@ const clockIn = async (req, res) => {
 
     const currentTime = getCurrentTime();
     
-    // IST Time breakdown for Late calculation (Cutoff: 10:05 AM)
+    // IST Time breakdown for Logic
     const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const currentHour = nowIST.getHours();
     const currentMinute = nowIST.getMinutes();
+    const timeInMins = (currentHour * 60) + currentMinute; // Convert to total minutes from midnight
+
+    // Fetch User's monthly quotas
+    const counts = await getMonthlyStats(userId, currentMonth, currentYear);
     
-    // LATE LOGIC: After 10:05 AM is Late
-    const status = (currentHour > 10 || (currentHour === 10 && currentMinute > 5)) ? 'Late' : 'Present';
+    let status = 'Present';
+
+    // 🟢 Up to 10:00 AM -> Present
+    if (timeInMins <= 600) { 
+      status = 'Present';
+    } 
+    // 🟠 10:01 AM to 10:15 AM -> Late (Max 3 per month, then Half Day)
+    else if (timeInMins <= 615) { 
+      if (counts.lateCount < 3) {
+        status = 'Late';
+      } else {
+        status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+      }
+    } 
+    // 🟣 10:16 AM to 11:30 AM -> Short Leave (Max 1 per month, then Half Day)
+    else if (timeInMins <= 690) { 
+      if (counts.shortLeaveCount < 1) {
+        status = 'Paid Short Leave';
+      } else {
+        status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+      }
+    } 
+    // 🔴 After 11:30 AM -> Direct Half Day
+    else { 
+      status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+    }
 
     let attendance = existingAttendance;
     if (attendance) {
-      // If cron job previously marked them 'Absent', update it to Present/Late on actual clock-in
       attendance.clockInTime = currentTime;
       attendance.status = status;
       attendance.faceVerified = true;
@@ -71,16 +118,48 @@ const clockIn = async (req, res) => {
   }
 };
 
-// @desc    Mark Clock-Out Attendance (Simple & Clean, No Overtime)
+// @desc    Mark Clock-Out Attendance & Apply Early Exit Penalty
 // @route   POST /api/attendance/clock-out
 const clockOut = async (req, res) => {
   try {
     const userId = req.user._id;
     const currentDate = getFormattedDate();
+    const [, currentMonth, currentYear] = currentDate.split(' ');
 
     const attendance = await Attendance.findOne({ employee: userId, date: currentDate });
     if (!attendance || attendance.clockInTime === '--:--') {
       return res.status(400).json({ message: 'You have not clocked in today yet!' });
+    }
+
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const currentHour = nowIST.getHours();
+    const currentMinute = nowIST.getMinutes();
+    const timeInMins = (currentHour * 60) + currentMinute;
+
+    const counts = await getMonthlyStats(userId, currentMonth, currentYear);
+
+    // ✅ EARLY CLOCK OUT LOGIC (Before 6:00 PM)
+    if (timeInMins < 1080) { 
+      
+      // 🟣 4:30 PM to 5:59 PM (Eligible for Short Leave if available)
+      if (timeInMins >= 990) { 
+        if (attendance.status === 'Present' || attendance.status === 'Late') {
+          if (counts.shortLeaveCount < 1) {
+            attendance.status = 'Paid Short Leave';
+          } else {
+            attendance.status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+          }
+        } else if (attendance.status === 'Paid Short Leave') {
+          // Used short leave in morning AND leaving early = Half Day penalty
+          attendance.status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+        }
+      } 
+      // 🔴 Before 4:30 PM (Automatic Half Day Penalty)
+      else {
+        if (attendance.status !== 'Paid Half Day' && attendance.status !== 'Unpaid Half Day') {
+          attendance.status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+        }
+      }
     }
 
     attendance.clockOutTime = getCurrentTime();
@@ -122,7 +201,7 @@ const getAllLogs = async (req, res) => {
 const getMonthlyReport = async (req, res) => {
   try {
     const { employeeId } = req.params;
-    let { month, year } = req.query; // Example: ?month=Sep&year=2026
+    let { month, year } = req.query;
 
     const User = require('../models/User');
     const employee = await User.findOne({ employeeId });
@@ -131,7 +210,6 @@ const getMonthlyReport = async (req, res) => {
     }
 
     let targetMonth = month || 'Sept';
-    // ✅ Fix: Normalize 'Sep' to 'Sept' to match DB format
     if (targetMonth.toLowerCase() === 'sep') {
       targetMonth = 'Sept';
     }

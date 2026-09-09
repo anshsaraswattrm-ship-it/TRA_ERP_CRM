@@ -106,8 +106,8 @@ const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
-      // 🔒 STRICT SECURITY: Master Admin cannot be deleted
-      if (user.employeeId === 'RA-001-ADMIN-2026') {
+      // 🔒 STRICT SECURITY: ANY Super Admin account cannot be deleted via API
+      if (user.role === 'Super Admin') {
         return res.status(403).json({ message: 'Action Denied: Master Super Admin cannot be deleted!' });
       }
       
@@ -128,8 +128,8 @@ const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
-      // 🔒 STRICT SECURITY: Master Admin cannot be edited by ANYONE
-      if (user.employeeId === 'RA-001-ADMIN-2026') {
+      // 🔒 STRICT SECURITY: ANY Super Admin account cannot be edited via API
+      if (user.role === 'Super Admin') {
          return res.status(403).json({ message: 'Action Denied: Master Super Admin details cannot be modified!' });
       }
 

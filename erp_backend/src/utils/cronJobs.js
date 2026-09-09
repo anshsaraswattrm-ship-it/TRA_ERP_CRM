@@ -2,7 +2,7 @@ const cron = require('node-cron');
 const Attendance = require('../models/Attendance');
 const User = require('../models/User'); 
 
-// ✅ Same 100% Bulletproof Date Formatter (Matches Frontend & Controller)
+// ✅ 100% Bulletproof Date Formatter (Matches Controller & Frontend)
 const getFormattedDate = () => {
   const dateObj = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   const day = String(dateObj.getDate()).padStart(2, '0');
@@ -13,23 +13,23 @@ const getFormattedDate = () => {
 };
 
 const startAttendanceCron = () => {
-  // Har raat 11:55 PM (IST) par chalega
+  // 🕒 Har raat 11:55 PM (IST) par chalega
   cron.schedule('55 23 * * *', async () => {
     try {
       const today = getFormattedDate();
-      console.log(`Running Auto-Absent Cron Job for: ${today}`);
+      console.log(`[CRON JOB] Running Auto-Absent Check for: ${today}`);
 
-      // Un sabhi employees ko uthao jinko attendance mark karni hoti hai
+      // ✅ EXCLUDE ROLES: Super Admin, Founder, aur Receptionist ko absent mark nahi karna hai
       const allEmployees = await User.find({ 
         role: { $nin: ['Super Admin', 'Founder and Director', 'Receptionist'] } 
       });
 
       for (let emp of allEmployees) {
-        // Check karo ki kya is employee ka aaj ka koi record pehle se hai?
+        // Check karo ki is employee ne aaj koi clock-in ya attendance mark ki hai kya?
         const existingLog = await Attendance.findOne({ employee: emp._id, date: today });
 
+        // Agar koi record nahi mila, toh automatically "Absent" laga do
         if (!existingLog) {
-          // Agar koi record nahi hai, toh Absent mark kardo
           await Attendance.create({
             employee: emp._id,
             employeeId: emp.employeeId,
@@ -42,9 +42,9 @@ const startAttendanceCron = () => {
           });
         }
       }
-      console.log(`✅ Auto-Absent marking completed for ${today}`);
+      console.log(`✅ [CRON JOB] Auto-Absent marking successfully completed for ${today}`);
     } catch (error) {
-      console.error("❌ Auto-Absent cron job failed:", error);
+      console.error("❌ [CRON JOB] Auto-Absent task failed:", error);
     }
   }, {
     scheduled: true,
