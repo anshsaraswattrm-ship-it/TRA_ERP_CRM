@@ -189,7 +189,8 @@ export default function StudentsPipeline() {
     <div className="w-full bg-slate-50/50 min-h-screen pb-12 relative overflow-x-hidden">
       
       {/* 1. STICKY TOP HEADER */}
-      <div className="sticky top-0 z-50 bg-slate-50 border-b border-slate-200 shadow-sm px-4 sm:px-6 lg:px-8 py-3 sm:h-[90px] flex flex-col justify-center w-full">
+      {/* ⬇ FIX: Changed z-50 to z-20 here so mobile sidebar stays on top */}
+      <div className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-sm px-4 sm:px-6 lg:px-8 py-3 sm:h-[90px] flex flex-col justify-center w-full">
         <h2 className="text-xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight">Student CRM Pipeline</h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1 truncate">Manage onboarding, financial ledgers, and milestone tracking seamlessly.</p>
       </div>

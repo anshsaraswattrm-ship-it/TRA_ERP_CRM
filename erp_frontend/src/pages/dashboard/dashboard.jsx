@@ -50,7 +50,8 @@ export default function Dashboard() {
     <div className="w-full bg-slate-50/50 min-h-screen pb-12 relative overflow-x-hidden">
       
       {/* 1. STICKY TOP HEADER & SEARCH SECTION */}
-      <div className="sticky top-0 z-40 bg-slate-50 border-b border-slate-200 shadow-sm px-4 sm:px-6 lg:px-8 py-3 sm:h-[90px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+      {/* ⬇ FIX: Changed z-40 to z-20 here so mobile sidebar stays on top */}
+      <div className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 shadow-sm px-4 sm:px-6 lg:px-8 py-3 sm:h-[90px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
         <div>
           <h1 className="text-xl sm:text-3xl font-extrabold text-[#084e8d] tracking-tight flex items-center">
             <Flame className="text-[#e9272e] mr-2 flex-shrink-0" size={24} /> Sales Leaderboard
