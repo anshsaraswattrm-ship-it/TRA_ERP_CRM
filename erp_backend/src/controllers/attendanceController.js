@@ -21,7 +21,7 @@ const getCurrentTime = () => {
   });
 };
 
-// Helper to calculate monthly stats for Quota Limits
+// Helper to calculate monthly stats for Quota Limits & Grace Periods
 const getMonthlyStats = async (userId, monthStr, yearStr) => {
   const logs = await Attendance.find({ employee: userId });
   const monthLogs = logs.filter(log => log.date.includes(monthStr) && log.date.includes(yearStr));
@@ -29,14 +29,31 @@ const getMonthlyStats = async (userId, monthStr, yearStr) => {
   let lateCount = 0;
   let shortLeaveCount = 0;
   let paidHalfDayCount = 0;
+  let graceLateWindowCount = 0; // Tracks arrivals strictly between 10:01 AM and 10:15 AM
 
   monthLogs.forEach(log => {
     if (log.status === 'Late') lateCount++;
     if (log.status === 'Paid Short Leave') shortLeaveCount++;
     if (log.status === 'Paid Half Day') paidHalfDayCount++;
+
+    // Calculate how many times employee arrived between 10:01 and 10:15
+    if (log.clockInTime && log.clockInTime !== '--:--') {
+      const parts = log.clockInTime.split(' ');
+      if (parts.length === 2) {
+        const [time, modifier] = parts;
+        let [hours, minutes] = time.split(':').map(Number);
+        if (modifier === 'PM' && hours !== 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+        const mins = hours * 60 + minutes;
+        
+        if (mins >= 601 && mins <= 615) {
+          graceLateWindowCount++;
+        }
+      }
+    }
   });
 
-  return { lateCount, shortLeaveCount, paidHalfDayCount };
+  return { lateCount, shortLeaveCount, paidHalfDayCount, graceLateWindowCount };
 };
 
 // @desc    Mark Clock-In Attendance
@@ -46,7 +63,7 @@ const clockIn = async (req, res) => {
     const userId = req.user._id;
     const employeeId = req.user.employeeId;
     
-    const currentDate = getFormattedDate(); // Format: "09 Sept 2026"
+    const currentDate = getFormattedDate(); 
     const [, currentMonth, currentYear] = currentDate.split(' ');
 
     // Check if already clocked in today
@@ -63,7 +80,7 @@ const clockIn = async (req, res) => {
     const currentMinute = nowIST.getMinutes();
     const timeInMins = (currentHour * 60) + currentMinute; // Convert to total minutes from midnight
 
-    // Fetch User's monthly quotas
+    // Fetch User's monthly quotas & stats
     const counts = await getMonthlyStats(userId, currentMonth, currentYear);
     
     let status = 'Present';
@@ -72,23 +89,23 @@ const clockIn = async (req, res) => {
     if (timeInMins <= 600) { 
       status = 'Present';
     } 
-    // 🟠 10:01 AM to 10:15 AM -> Late (Max 3 per month, then Half Day)
+    // 🟠 10:01 AM to 10:15 AM -> First 3 times = Present, 4th time onwards = Late
     else if (timeInMins <= 615) { 
-      if (counts.lateCount < 3) {
-        status = 'Late';
+      if (counts.graceLateWindowCount < 3) {
+        status = 'Present';
       } else {
-        status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
+        status = 'Late';
       }
     } 
-    // 🟣 10:16 AM to 11:30 AM -> Short Leave (Max 1 per month, then Half Day)
-    else if (timeInMins <= 690) { 
+    // 🟣 11:00 AM to 11:30 AM -> Short Leave (Max 1 per month, then Half Day)
+    else if (timeInMins >= 660 && timeInMins <= 690) { 
       if (counts.shortLeaveCount < 1) {
         status = 'Paid Short Leave';
       } else {
         status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
       }
     } 
-    // 🔴 After 11:30 AM -> Direct Half Day
+    // 🔴 10:16 AM to 10:59 AM OR After 11:30 AM -> Direct Half Day First Time
     else { 
       status = counts.paidHalfDayCount < 2 ? 'Paid Half Day' : 'Unpaid Half Day';
     }
