@@ -153,7 +153,6 @@ export default function Attendance() {
     try {
       setApiLoading(true);
       
-      // ✅ FIX: URL encode the employee ID so slashes (/) don't break the API route
       const encodedEmployeeId = encodeURIComponent(employeeIdInput.trim());
       
       const res = await fetch(`https://tra-erp-crm.onrender.com/api/attendance/monthly-report/${encodedEmployeeId}?month=${monthInput.trim()}&year=${yearInput.trim()}`, {
