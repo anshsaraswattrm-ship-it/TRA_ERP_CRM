@@ -12,7 +12,7 @@ const formatSafeDate = (dateObj) => {
   return `${day} ${month} ${year}`;
 };
 
-// ✅ NEW: Helper function for advanced status badge colors
+// ✅ Helper function for advanced status badge colors
 const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'Present': return 'bg-green-100 text-green-800';
@@ -141,7 +141,7 @@ export default function Attendance() {
   const filteredMyLogs = myLogs.filter(log => availableDates.includes(log.date));
 
   const handleDownloadMonthlyReport = async () => {
-    const employeeIdInput = prompt("Enter Employee ID for monthly report (e.g., RA-003-BDE-LV1-2026):");
+    const employeeIdInput = prompt("Enter Employee ID for monthly report (e.g., 101/SEP/RAPTOR/26):");
     if (!employeeIdInput) return;
 
     const monthInput = prompt("Enter Month short code (e.g., Sept, Aug, Oct):", "Sept");
@@ -412,7 +412,7 @@ export default function Attendance() {
               {isCheckedIn ? (
                 <div className="text-center py-4">
                   <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-green-50 rounded-full flex items-center justify-center mb-4 border border-green-100">
-                    <CheckCircle2 className="text-green-500" size={36} className="sm:w-10 sm:h-10 w-8 h-8" />
+                    <CheckCircle2 className="text-green-500 sm:w-10 sm:h-10 w-8 h-8" size={36} />
                   </div>
                   <h4 className="text-lg sm:text-xl font-bold text-slate-800 mb-1">You are Clocked In</h4>
                   <p className="text-[11px] sm:text-xs text-slate-500 mb-8 px-2 sm:px-4">Attendance marked successfully. Complete verification to clock out securely.</p>
@@ -482,10 +482,18 @@ export default function Attendance() {
                     {authStep >= 2 && <p className="text-[11px] sm:text-xs text-green-600 font-semibold">Face Matched Successfully.</p>}
                   </div>
 
-                  <div className={`p-4 sm:p-5 rounded-xl border-2 transition-all ${authStep >= 4 ? 'border-green-200 bg-green-50' : authStep === 3 ? 'border-[#084e8d]/40 bg-[#084e8d]/5' : 'border-slate-200 bg-slate-50 opacity-50'}`}>
+                  {/* ✅ UPDATED STEP 2 UI (Dynamic Highlighting) */}
+                  <div className={`p-4 sm:p-5 rounded-xl border-2 transition-all ${
+                    authStep >= 4 ? 'border-green-200 bg-green-50' : 
+                    authStep === 3 ? 'border-[#084e8d]/40 bg-[#084e8d]/5' : 
+                    authStep === 2 ? 'border-slate-300 bg-white shadow-sm opacity-100' : 
+                    'border-slate-200 bg-slate-50 opacity-50'
+                  }`}>
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="font-bold text-slate-800 flex items-center text-xs sm:text-sm">
-                        <span className="bg-slate-800 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs mr-2 sm:mr-2.5 flex-shrink-0">2</span> 
+                        <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs mr-2 sm:mr-2.5 flex-shrink-0 ${
+                          authStep >= 2 ? 'bg-slate-800 text-white' : 'bg-slate-300 text-slate-500'
+                        }`}>2</span> 
                         Reception TV QR Scan
                       </h4>
                       {authStep >= 4 && <CheckCircle2 className="text-green-500 flex-shrink-0" size={18} />}
@@ -556,7 +564,6 @@ export default function Attendance() {
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockInTime}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-slate-600">{log.clockOutTime}</td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
-                            {/* ✅ Updated with dynamic badge helper */}
                             <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${getStatusBadgeClass(log.status)}`}>
                               {log.status}
                             </span>
@@ -640,7 +647,6 @@ export default function Attendance() {
                       <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-700">{log.clockInTime}</td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-slate-700">{log.clockOutTime}</td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
-                        {/* ✅ Updated with dynamic badge helper */}
                         <span className={`px-3 sm:px-4 py-1 sm:py-1.5 inline-flex text-[10px] sm:text-xs leading-5 font-bold rounded-full ${getStatusBadgeClass(log.status)}`}>
                           {log.status}
                         </span>
@@ -671,7 +677,7 @@ export default function Attendance() {
               <X size={20} />
             </button>
             <h3 className="text-lg sm:text-xl font-bold text-[#084e8d] mb-2 flex items-center pr-8">
-              <Camera className="mr-2 flex-shrink-0" size={20} className="sm:w-5 sm:h-5 w-4 h-4" /> Live Face Verification
+              <Camera className="mr-2 flex-shrink-0 sm:w-5 sm:h-5 w-4 h-4" size={20} /> Live Face Verification
             </h3>
             <p className="text-[11px] sm:text-xs text-slate-500 mb-4">{faceStatusMsg}</p>
             <div className="relative w-full h-64 sm:h-72 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center shadow-inner mb-6">
