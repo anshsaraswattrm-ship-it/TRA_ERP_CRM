@@ -329,30 +329,36 @@ export default function UserAccounts() {
                   ) : usersList.length === 0 ? (
                     <tr><td colSpan="4" className="px-6 py-10 text-center text-slate-500"><ShieldCheck className="mx-auto h-10 w-10 text-slate-300 mb-2" /><p className="text-sm">No accounts found.</p></td></tr>
                   ) : (
-                    usersList.map((user) => (
-                      <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><span className="px-2 sm:px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] sm:text-xs font-bold font-mono">{user.employeeId}</span></td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-xs sm:text-sm font-semibold text-slate-800">{user.name}</span><span className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold inline-block ${
-                            user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : 
-                            user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : 
-                            user.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 
-                            user.role === 'Receptionist' ? 'bg-teal-100 text-teal-700' : 
-                            user.role === 'Raptor Marketing' ? 'bg-pink-100 text-pink-700' : 
-                            'bg-emerald-100 text-emerald-700'
-                          }`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end gap-1.5 sm:gap-2">
-                            <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-800 bg-white border border-slate-200 hover:border-blue-300 p-1.5 rounded-md shadow-sm transition-colors" title="Edit Details"><Edit2 size={16} /></button>
-                            <button onClick={() => handleDeleteClick(user._id, user.role)} className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white border border-slate-200 hover:border-[#e9272e]/30 p-1.5 rounded-md shadow-sm transition-colors" title="Revoke Access"><Trash2 size={16} /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                    [...usersList]
+                      .sort((a, b) => {
+                        const idA = parseInt(a.employeeId?.split('/')[0]) || 9999;
+                        const idB = parseInt(b.employeeId?.split('/')[0]) || 9999;
+                        return idA - idB;
+                      })
+                      .map((user) => (
+                        <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><span className="px-2 sm:px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] sm:text-xs font-bold font-mono">{user.employeeId}</span></td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap"><div className="flex flex-col"><span className="text-xs sm:text-sm font-semibold text-slate-800">{user.name}</span><span className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{user.email}</span></div></td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold inline-block ${
+                              user.role === 'Super Admin' ? 'bg-red-100 text-[#e9272e]' : 
+                              user.role === 'Founder and Director' ? 'bg-yellow-100 text-yellow-700' : 
+                              user.role === 'Manager' ? 'bg-purple-100 text-purple-700' : 
+                              user.role === 'Receptionist' ? 'bg-teal-100 text-teal-700' : 
+                              user.role === 'Raptor Marketing' ? 'bg-pink-100 text-pink-700' : 
+                              'bg-emerald-100 text-emerald-700'
+                            }`}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end gap-1.5 sm:gap-2">
+                              <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-800 bg-white border border-slate-200 hover:border-blue-300 p-1.5 rounded-md shadow-sm transition-colors" title="Edit Details"><Edit2 size={16} /></button>
+                              <button onClick={() => handleDeleteClick(user._id, user.role)} className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white border border-slate-200 hover:border-[#e9272e]/30 p-1.5 rounded-md shadow-sm transition-colors" title="Revoke Access"><Trash2 size={16} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
                   )}
                 </tbody>
               </table>
