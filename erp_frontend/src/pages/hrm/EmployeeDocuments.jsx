@@ -8,7 +8,7 @@ export default function EmployeeDocuments() {
   const [actionLoading, setActionLoading] = useState({}); 
   const [popup, setPopup] = useState({ show: false, type: '', message: '' });
 
-  // Use your local or production URL here
+  // Use your production API URL
   const API_BASE_URL = 'https://tra-erp-crm.onrender.com/api';
 
   // Core Employee Documents List (Must match database `documentType`)
@@ -70,7 +70,7 @@ export default function EmployeeDocuments() {
         docsData.forEach(doc => {
           mappedDocs[doc.documentType] = {
             _id: doc._id,
-            name: doc.fileUrl.split('/').pop().substring(0, 20) + '...', // Shorten filename from URL
+            name: doc.fileUrl.split('/').pop().substring(0, 20) + '...', 
             date: new Date(doc.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
             url: doc.fileUrl
           };
@@ -93,7 +93,7 @@ export default function EmployeeDocuments() {
     }
   };
 
-  // 2. Upload a new Document to Cloudinary via Backend
+  // 2. Upload a new Document to Cloudinary via Backend immediately on file select
   const handleFileUpload = async (docKey, file) => {
     if (!file || !activeEmployee) return;
     
@@ -270,7 +270,7 @@ export default function EmployeeDocuments() {
                         {isProcessing ? (
                           <div className="flex flex-col items-center justify-center py-3 border border-dashed border-slate-200 rounded-lg mt-auto bg-slate-50">
                             <Loader2 className="animate-spin text-[#084e8d] mb-2" size={20} />
-                            <span className="text-xs text-slate-500 font-medium">Processing...</span>
+                            <span className="text-xs text-slate-500 font-medium">Uploading to Cloud...</span>
                           </div>
                         ) : isUploaded ? (
                           <div className="mt-1 bg-emerald-50/80 rounded-lg p-2.5 border border-emerald-100">

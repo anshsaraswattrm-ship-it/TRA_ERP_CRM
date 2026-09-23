@@ -19,9 +19,12 @@ const uploadDocument = async (req, res) => {
       return res.status(400).json({ message: 'No file provided' });
     }
 
-    // Buffer ko Cloudinary par stream karna
+    // Dynamic folder based on employeeId so files are neatly organized in Cloudinary
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'raptor_erp_documents' },
+      { 
+        folder: `raptor_erp_documents/${employeeId || 'general'}`,
+        resource_type: 'auto'
+      },
       async (error, result) => {
         if (error) return res.status(500).json({ message: 'Cloudinary upload failed', error });
 
