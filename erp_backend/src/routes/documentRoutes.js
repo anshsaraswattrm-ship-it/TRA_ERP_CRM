@@ -1,10 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { uploadDocument, getEmployeeDocuments, deleteDocument } = require('../controllers/documentController');
-const { protect, admin } = require('../middleware/authMiddleware'); // Tera existing auth middleware
 
-// Memory storage for multer (No local files saved)
+const { uploadDocument, getEmployeeDocuments, deleteDocument } = require('../controllers/documentController');
+const { protect } = require('../middlewares/authMiddleware'); 
+
+// Safe inline Admin check (since 'admin' export was missing in authMiddleware)
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'Super Admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as an admin (Super Admin access required)' });
+  }
+};
+
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
