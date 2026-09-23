@@ -6,6 +6,9 @@ const User = require('./src/models/User');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 
+// ✅ Document Routes Import (Path updated according to your structure)
+const documentRoutes = require('./src/routes/documentRoutes');
+
 const startAttendanceCron = require('./src/utils/cronJobs'); 
 
 const app = express();
@@ -71,6 +74,9 @@ seedAdmin();
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
+
+// ✅ Document Routes Mounted Here
+app.use('/api/documents', documentRoutes);
 
 // ✅ START CRON JOBS
 startAttendanceCron();
