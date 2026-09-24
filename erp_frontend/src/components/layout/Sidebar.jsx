@@ -71,7 +71,7 @@ export default function Sidebar({ closeMobile }) {
       name: 'Employee Documents', 
       path: '/documents', 
       icon: FileText, 
-      // roles: ['Super Admin', 'Founder and Director', 'Manager', 'Receptionist'] 
+      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist', 'Raptor Marketing']
     },
     {
       name: 'IT Face Enrollment',
