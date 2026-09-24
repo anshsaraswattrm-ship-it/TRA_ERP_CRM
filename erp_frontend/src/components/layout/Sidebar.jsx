@@ -47,7 +47,6 @@ export default function Sidebar({ closeMobile }) {
       name: 'Attendance', 
       path: '/attendance', 
       icon: UserCheck, 
-      // ✅ Added 'Raptor Marketing' HERE only so they just see this tab
       roles: ['Super Admin', 'Founder and Director', 'Manager', 'Team Leader', 'BDE LEVEL1', 'BDE LEVEL2', 'Receptionist', 'Raptor Marketing'] 
     },
     { 
@@ -72,7 +71,7 @@ export default function Sidebar({ closeMobile }) {
       name: 'Employee Documents', 
       path: '/documents', 
       icon: FileText, 
-      roles: ['Super Admin', 'Founder and Director', 'Manager'] 
+      roles: ['Super Admin', 'Founder and Director', 'Manager', 'Receptionist'] 
     },
     {
       name: 'IT Face Enrollment',
