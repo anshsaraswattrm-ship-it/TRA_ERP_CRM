@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, FileText, UploadCloud, Check, Trash2, FolderOpen, UserCheck, Shield, Loader2, CheckCircle, AlertCircle, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, FileText, UploadCloud, Check, Trash2, FolderOpen, UserCheck, Shield, Loader2, CheckCircle, AlertCircle, Eye, Lock } from 'lucide-react';
 
 export default function EmployeeDocuments() {
   const [searchInput, setSearchInput] = useState('');
@@ -8,14 +8,25 @@ export default function EmployeeDocuments() {
   const [actionLoading, setActionLoading] = useState({}); 
   const [popup, setPopup] = useState({ show: false, type: '', message: '' });
 
-  // Use your production API URL
+  // API URL
   const API_BASE_URL = 'https://tra-erp-crm.onrender.com/api';
 
-  // Core Employee Documents List (Must match database `documentType`)
+  // --- ROLE BASED ACCESS CONTROL (RBAC) LOGIC ---
+  const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+  const userRole = userInfo.role || '';
+  
+  const isSuperAdmin = userRole === 'Super Admin';
+  const isManagement = ['Founder', 'Reception', 'Receptionist'].includes(userRole);
+  
+  // Who can search other employees?
+  const canSearch = isSuperAdmin || isManagement;
+  // Who can upload or delete files?
+  const canUploadDelete = isSuperAdmin;
+
   const documentSlots = [
     { key: 'photo', label: 'Employee Photograph' },
     { key: 'resume', label: 'Updated Resume / CV' },
-    { key: 'id_proof', label: 'Government ID (Passport/License)' },
+    { key: 'id_proof', label: 'Government ID (National ID/Passport/License)' },
     { key: 'pan_card', label: 'PAN Card' },
     { key: 'offer_letter', label: 'Signed Offer Letter' },
     { key: 'bank_details', label: 'Bank Passbook / Cancelled Cheque' },
@@ -27,44 +38,61 @@ export default function EmployeeDocuments() {
     setTimeout(() => setPopup({ show: false, type: '', message: '' }), 3000);
   };
 
+  // Auto-fetch for regular employees on component mount
+  useEffect(() => {
+    if (!canSearch && userInfo._id) {
+      fetchEmployeeData(null); // Fetch own data
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // --- Handlers ---
 
-  // 1. Fetch Employee and their Documents
-  const handleSearch = async () => {
-    if (!searchInput.trim()) {
-      showPopup('error', 'Please enter an Employee ID');
-      return;
-    }
-    
+  const fetchEmployeeData = async (queryId) => {
     setLoading(true);
     setActiveEmployee(null);
 
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      
-      // Step 1: Fetch user list to find the matching employee ID
-      const userRes = await fetch(`${API_BASE_URL}/auth/users`, {
-        headers: { Authorization: `Bearer ${userInfo?.token}` }
-      });
-      const usersList = await userRes.json();
-      
-      const foundUser = usersList.find(u => 
-        u.employeeId.toLowerCase() === searchInput.trim().toLowerCase()
-      );
+      let targetUserId = null;
+      let targetUserName = '';
+      let targetUserRole = '';
+      let targetUserEmpId = '';
 
-      if (!foundUser) {
-        showPopup('error', 'No employee found with this ID.');
-        setLoading(false);
-        return;
+      if (!canSearch) {
+        // REGULAR EMPLOYEE: Fetch their own profile from localStorage info
+        targetUserId = userInfo._id;
+        targetUserName = userInfo.name;
+        targetUserRole = userInfo.role;
+        targetUserEmpId = userInfo.employeeId;
+      } else {
+        // ADMIN/MANAGEMENT: Search in user list
+        const userRes = await fetch(`${API_BASE_URL}/auth/users`, {
+          headers: { Authorization: `Bearer ${userInfo.token}` }
+        });
+        const usersList = await userRes.json();
+        
+        const foundUser = usersList.find(u => 
+          u.employeeId.toLowerCase() === queryId.trim().toLowerCase()
+        );
+
+        if (!foundUser) {
+          showPopup('error', 'No employee found with this ID.');
+          setLoading(false);
+          return;
+        }
+
+        targetUserId = foundUser._id;
+        targetUserName = foundUser.name;
+        targetUserRole = foundUser.role;
+        targetUserEmpId = foundUser.employeeId;
       }
 
-      // Step 2: Fetch documents for this specific user
-      const docsRes = await fetch(`${API_BASE_URL}/documents/${foundUser._id}`, {
-        headers: { Authorization: `Bearer ${userInfo?.token}` }
+      // Fetch documents for the resolved user ID
+      const docsRes = await fetch(`${API_BASE_URL}/documents/${targetUserId}`, {
+        headers: { Authorization: `Bearer ${userInfo.token}` }
       });
       const docsData = await docsRes.json();
 
-      // Restructure backend docs array into a key-value pair for the UI slots
       const mappedDocs = {};
       if (Array.isArray(docsData)) {
         docsData.forEach(doc => {
@@ -78,10 +106,10 @@ export default function EmployeeDocuments() {
       }
 
       setActiveEmployee({
-        _id: foundUser._id,
-        id: foundUser.employeeId,
-        name: foundUser.name,
-        role: foundUser.role,
+        _id: targetUserId,
+        id: targetUserEmpId,
+        name: targetUserName,
+        role: targetUserRole,
         documents: mappedDocs 
       });
 
@@ -93,28 +121,33 @@ export default function EmployeeDocuments() {
     }
   };
 
-  // 2. Upload a new Document to Cloudinary via Backend immediately on file select
+  const handleSearchClick = () => {
+    if (!searchInput.trim()) {
+      showPopup('error', 'Please enter an Employee ID');
+      return;
+    }
+    fetchEmployeeData(searchInput);
+  };
+
   const handleFileUpload = async (docKey, file) => {
-    if (!file || !activeEmployee) return;
+    if (!file || !activeEmployee || !canUploadDelete) return;
     
-    // Max 5MB Validation
     if (file.size > 5 * 1024 * 1024) {
       showPopup('error', 'File size must be less than 5MB.');
       return;
     }
 
     setActionLoading(prev => ({ ...prev, [docKey]: true }));
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('employeeId', activeEmployee._id); // Database internal ID
+    formData.append('employeeId', activeEmployee._id);
     formData.append('documentType', docKey);
 
     try {
       const res = await fetch(`${API_BASE_URL}/documents/upload`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${userInfo?.token}` }, // Do NOT set Content-Type for FormData
+        headers: { Authorization: `Bearer ${userInfo.token}` },
         body: formData
       });
       
@@ -144,17 +177,16 @@ export default function EmployeeDocuments() {
     }
   };
 
-  // 3. Delete Document from DB and Cloudinary
   const handleDeleteFile = async (docKey, docId) => {
+    if(!canUploadDelete) return;
     if(!window.confirm("Are you sure you want to permanently delete this document?")) return;
 
     setActionLoading(prev => ({ ...prev, [docKey]: true }));
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
     try {
       const res = await fetch(`${API_BASE_URL}/documents/${docId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${userInfo?.token}` }
+        headers: { Authorization: `Bearer ${userInfo.token}` }
       });
 
       if (res.ok) {
@@ -194,37 +226,47 @@ export default function EmployeeDocuments() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden w-full max-w-7xl mx-auto">
-        <div className="bg-gradient-to-r from-[#084e8d]/5 to-white px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center">
-          <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
-            <Shield className="text-[#084e8d]" size={18} />
+        <div className="bg-gradient-to-r from-[#084e8d]/5 to-white px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
+              <Shield className="text-[#084e8d]" size={18} />
+            </div>
+            <h3 className="text-sm sm:text-[15px] font-bold text-slate-800 uppercase tracking-wider">HR Records Workspace</h3>
           </div>
-          <h3 className="text-sm sm:text-[15px] font-bold text-slate-800 uppercase tracking-wider">HR Records Workspace</h3>
+          
+          {/* Access Badge */}
+          <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] sm:text-xs font-bold border ${canUploadDelete ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+            <Lock size={12} />
+            {canUploadDelete ? 'FULL ACCESS' : 'VIEW ONLY'}
+          </div>
         </div>
         
         <div className="p-4 sm:p-8">
           
-          {/* Search Bar */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 w-full bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">
-            <div className="flex-1 relative w-full">
-              <Search className="absolute left-3 sm:left-4 top-3 sm:top-3.5 text-slate-400" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search Employee ID to view records (e.g. 101/03/RAPTOR/26)" 
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10 sm:pl-12 block w-full px-4 py-2.5 sm:py-3 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#084e8d]/20 focus:border-[#084e8d] transition-all outline-none shadow-sm"
-              />
+          {/* Search Bar - Hidden for Regular Employees */}
+          {canSearch && (
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 w-full bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200">
+              <div className="flex-1 relative w-full">
+                <Search className="absolute left-3 sm:left-4 top-3 sm:top-3.5 text-slate-400" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="Search Employee ID to view records (e.g. 101/03/RAPTOR/26)" 
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+                  className="pl-10 sm:pl-12 block w-full px-4 py-2.5 sm:py-3 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#084e8d]/20 focus:border-[#084e8d] transition-all outline-none shadow-sm"
+                />
+              </div>
+              <button 
+                onClick={handleSearchClick}
+                disabled={loading}
+                className="w-full sm:w-auto bg-slate-900 text-white px-6 sm:px-10 py-2.5 sm:py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-md hover:shadow-lg flex-shrink-0 flex items-center justify-center disabled:opacity-70"
+              >
+                {loading ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
+                {loading ? 'Searching...' : 'Fetch Employee'}
+              </button>
             </div>
-            <button 
-              onClick={handleSearch}
-              disabled={loading}
-              className="w-full sm:w-auto bg-slate-900 text-white px-6 sm:px-10 py-2.5 sm:py-3 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-md hover:shadow-lg flex-shrink-0 flex items-center justify-center disabled:opacity-70"
-            >
-              {loading ? <Loader2 className="animate-spin mr-2" size={18} /> : null}
-              {loading ? 'Searching...' : 'Fetch Employee'}
-            </button>
-          </div>
+          )}
 
           {activeEmployee ? (
             <div className="w-full space-y-6 animate-in fade-in duration-300">
@@ -270,7 +312,7 @@ export default function EmployeeDocuments() {
                         {isProcessing ? (
                           <div className="flex flex-col items-center justify-center py-3 border border-dashed border-slate-200 rounded-lg mt-auto bg-slate-50">
                             <Loader2 className="animate-spin text-[#084e8d] mb-2" size={20} />
-                            <span className="text-xs text-slate-500 font-medium">Uploading to Cloud...</span>
+                            <span className="text-xs text-slate-500 font-medium">Processing...</span>
                           </div>
                         ) : isUploaded ? (
                           <div className="mt-1 bg-emerald-50/80 rounded-lg p-2.5 border border-emerald-100">
@@ -287,28 +329,41 @@ export default function EmployeeDocuments() {
                                 >
                                   <Eye size={14} />
                                 </a>
-                                <button 
-                                  onClick={() => handleDeleteFile(slot.key, docData._id)}
-                                  className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white p-1.5 rounded-md shadow-sm border border-slate-100 transition-colors flex-shrink-0"
-                                  title="Remove File"
-                                >
-                                  <Trash2 size={14} />
-                                </button>  
+                                
+                                {/* Only Super Admin can see Delete Button */}
+                                {canUploadDelete && (
+                                  <button 
+                                    onClick={() => handleDeleteFile(slot.key, docData._id)}
+                                    className="text-[#e9272e]/70 hover:text-[#e9272e] bg-white p-1.5 rounded-md shadow-sm border border-slate-100 transition-colors flex-shrink-0"
+                                    title="Remove File"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                )}  
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <label className="cursor-pointer bg-white hover:bg-[#084e8d]/5 hover:border-[#084e8d]/30 hover:text-[#084e8d] border border-dashed border-slate-300 rounded-lg flex justify-center py-2.5 sm:py-3 transition-colors group mt-auto">
-                            <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#084e8d] flex items-center gap-2">
-                              <UploadCloud size={16} /> Click to Upload
-                            </span>
-                            <input 
-                              type="file"
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              className="hidden" 
-                              onChange={(e) => handleFileUpload(slot.key, e.target.files[0])} 
-                            />
-                          </label>
+                          // If not uploaded, check if user has upload rights
+                          canUploadDelete ? (
+                            <label className="cursor-pointer bg-white hover:bg-[#084e8d]/5 hover:border-[#084e8d]/30 hover:text-[#084e8d] border border-dashed border-slate-300 rounded-lg flex justify-center py-2.5 sm:py-3 transition-colors group mt-auto">
+                              <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#084e8d] flex items-center gap-2">
+                                <UploadCloud size={16} /> Click to Upload
+                              </span>
+                              <input 
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                className="hidden" 
+                                onChange={(e) => handleFileUpload(slot.key, e.target.files[0])} 
+                              />
+                            </label>
+                          ) : (
+                            <div className="flex justify-center items-center py-2.5 sm:py-3 mt-auto bg-slate-50 rounded-lg border border-slate-200">
+                              <span className="text-[11px] sm:text-xs font-medium text-slate-400 flex items-center gap-2">
+                                <Shield size={14} /> Document Not Uploaded
+                              </span>
+                            </div>
+                          )
                         )}
                       </div>
                     );
@@ -318,11 +373,24 @@ export default function EmployeeDocuments() {
             </div>
           ) : (
             <div className="text-center py-16 sm:py-20 px-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-300">
-              <div className="bg-white h-14 w-14 sm:h-16 sm:w-16 rounded-full flex items-center justify-center mx-auto shadow-sm mb-4">
-                <UserCheck className="h-7 w-7 sm:h-8 sm:w-8 text-[#084e8d]/70" />
-              </div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-800">No Employee Selected</h3>
-              <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-sm mx-auto">Enter an exact Employee ID (e.g. 101/03/RAPTOR/26) to manage their records.</p>
+              {loading ? (
+                <div className="flex flex-col items-center">
+                  <Loader2 className="animate-spin text-[#084e8d] h-10 w-10 mb-4" />
+                  <p className="text-sm text-slate-500">Loading secure records...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white h-14 w-14 sm:h-16 sm:w-16 rounded-full flex items-center justify-center mx-auto shadow-sm mb-4">
+                    <UserCheck className="h-7 w-7 sm:h-8 sm:w-8 text-[#084e8d]/70" />
+                  </div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800">No Employee Selected</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-sm mx-auto">
+                    {canSearch 
+                      ? 'Enter an exact Employee ID (e.g. 101/03/RAPTOR/26) to manage their records.'
+                      : 'Fetching your secure records...'}
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>

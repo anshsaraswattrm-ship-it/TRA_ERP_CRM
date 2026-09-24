@@ -52,8 +52,20 @@ const uploadDocument = async (req, res) => {
 // @route   GET /api/documents/:employeeId
 const getEmployeeDocuments = async (req, res) => {
   try {
-    const documents = await Document.find({ employee: req.params.employeeId })
-      .sort({ createdAt: -1 });
+    const requestedEmployeeId = req.params.employeeId;
+    const currentUser = req.user;
+
+    // SECURITY LOGIC (RBAC)
+    const isSuperAdmin = currentUser.role === 'Super Admin';
+    const isFounderOrReception = ['Founder', 'Reception', 'Receptionist'].includes(currentUser.role);
+    const isRequestingOwnDocs = currentUser._id.toString() === requestedEmployeeId;
+
+    // Agar user Super Admin, Founder, ya Reception nahi hai... aur wo apne alawa kisi aur ke documents mang raha hai -> Block kardo
+    if (!isSuperAdmin && !isFounderOrReception && !isRequestingOwnDocs) {
+      return res.status(403).json({ message: 'Access denied. You can only view your own documents.' });
+    }
+
+    const documents = await Document.find({ employee: requestedEmployeeId }).sort({ createdAt: -1 });
     res.json(documents);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
