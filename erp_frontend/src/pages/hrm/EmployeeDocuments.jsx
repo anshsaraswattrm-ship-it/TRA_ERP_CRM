@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, FileText, UploadCloud, Check, Trash2, FolderOpen, UserCheck, Shield, Loader2, CheckCircle, AlertCircle, Eye, Lock } from 'lucide-react';
+import { Search, FileText, UploadCloud, Check, Trash2, FolderOpen, UserCheck, Shield, Loader2, CheckCircle, AlertCircle, Eye, Lock, Info } from 'lucide-react'; // 🔥 'Info' icon add kiya hai
 
 export default function EmployeeDocuments() {
   const [searchInput, setSearchInput] = useState('');
@@ -15,7 +15,6 @@ export default function EmployeeDocuments() {
   const userRole = userInfo.role || '';
   
   const isSuperAdmin = userRole === 'Super Admin';
-  // EXACT ROLES MAPPED HERE (Added Founder and Director)
   const isManagement = ['Founder and Director', 'Founder', 'Manager', 'Receptionist', 'Reception'].includes(userRole);
   
   const canSearch = isSuperAdmin || isManagement;
@@ -24,11 +23,19 @@ export default function EmployeeDocuments() {
   const documentSlots = [
     { key: 'photo', label: 'Employee Photograph' },
     { key: 'resume', label: 'Updated Resume / CV' },
-    { key: 'id_proof', label: 'Government ID (Aadhaar/Passport/License)' },
+    { key: 'id_proof', label: 'Government ID (Aadhaar/Passport)' },
     { key: 'pan_card', label: 'PAN Card' },
     { key: 'offer_letter', label: 'Signed Offer Letter' },
     { key: 'bank_details', label: 'Bank Passbook / Cancelled Cheque' },
-    { key: 'relieving_letter', label: 'Relieving / Experience Letter' }
+    { key: 'relieving_letter', label: (
+      <>
+        Relieving / Experience Letter
+        <br />
+        <span className="text-[11px] text-slate-500 font-normal leading-tight mt-1 inline-block">
+          Note: If you have both Relieving and Experience letters, please merge them into a single PDF. Otherwise, upload your single document.
+        </span>
+      </>
+    )}
   ];
 
   const showPopup = (type, message) => {
@@ -39,7 +46,7 @@ export default function EmployeeDocuments() {
   // Auto-fetch for regular employees on mount
   useEffect(() => {
     if (!canSearch && userInfo._id) {
-      fetchEmployeeData(''); // Empty string triggers fetching their own data via backend
+      fetchEmployeeData(''); 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -67,7 +74,6 @@ export default function EmployeeDocuments() {
         return;
       }
 
-      // Backend now nicely packages user details and documents together
       const { user, documents } = data;
 
       const mappedDocs = {};
@@ -263,11 +269,25 @@ export default function EmployeeDocuments() {
 
               {/* Document Vault Grid */}
               <div className="bg-slate-50/50 border border-slate-200 rounded-2xl p-4 sm:p-6">
-                <div className="flex items-center mb-4 sm:mb-6">
-                  <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
-                    <FolderOpen className="text-[#084e8d]" size={18} />
+                
+                {/* Header & Helper Note Container */}
+                <div className="mb-5 sm:mb-6">
+                  <div className="flex items-center mb-3">
+                    <div className="bg-[#084e8d]/10 p-2 rounded-lg mr-3 flex-shrink-0">
+                      <FolderOpen className="text-[#084e8d]" size={18} />
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-sm sm:text-base">Verification Documents</h4>
                   </div>
-                  <h4 className="font-bold text-slate-800 text-sm sm:text-base">Verification Documents</h4>
+                  
+                  {/* 🔥 NEW: Helpful Note for Uploads */}
+                  {canUploadDelete && (
+                    <div className="flex items-start gap-2 bg-blue-50/80 border border-blue-100 rounded-lg p-3 w-full">
+                      <Info className="text-blue-500 flex-shrink-0 mt-0.5" size={16} />
+                      <p className="text-[11px] sm:text-xs text-blue-800 leading-relaxed font-medium">
+                        <span className="font-bold">Upload Tip:</span> Upload a <span className="font-bold border-b border-blue-300">single image (JPG/PNG)</span> if only one page is required (e.g. Photo, PAN). If the document has multiple pages (e.g. ID Card Front & Back), please merge them and upload as a <span className="font-bold border-b border-blue-300">single PDF file</span>.
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
