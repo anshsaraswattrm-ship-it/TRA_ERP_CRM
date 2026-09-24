@@ -8,25 +8,23 @@ export default function EmployeeDocuments() {
   const [actionLoading, setActionLoading] = useState({}); 
   const [popup, setPopup] = useState({ show: false, type: '', message: '' });
 
-  // API URL
   const API_BASE_URL = 'https://tra-erp-crm.onrender.com/api';
 
-  // --- ROLE BASED ACCESS CONTROL (RBAC) LOGIC ---
+  // --- ROLE BASED ACCESS CONTROL (RBAC) ---
   const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
   const userRole = userInfo.role || '';
   
   const isSuperAdmin = userRole === 'Super Admin';
-  const isManagement = ['Founder', 'Reception', 'Receptionist'].includes(userRole);
+  // EXACT ROLES MAPPED HERE (Added Founder and Director)
+  const isManagement = ['Founder and Director', 'Founder', 'Manager', 'Receptionist', 'Reception'].includes(userRole);
   
-  // Who can search other employees?
   const canSearch = isSuperAdmin || isManagement;
-  // Who can upload or delete files?
   const canUploadDelete = isSuperAdmin;
 
   const documentSlots = [
     { key: 'photo', label: 'Employee Photograph' },
     { key: 'resume', label: 'Updated Resume / CV' },
-    { key: 'id_proof', label: 'Government ID (National ID/Passport/License)' },
+    { key: 'id_proof', label: 'Government ID (Aadhaar/Passport/License)' },
     { key: 'pan_card', label: 'PAN Card' },
     { key: 'offer_letter', label: 'Signed Offer Letter' },
     { key: 'bank_details', label: 'Bank Passbook / Cancelled Cheque' },
@@ -38,64 +36,43 @@ export default function EmployeeDocuments() {
     setTimeout(() => setPopup({ show: false, type: '', message: '' }), 3000);
   };
 
-  // Auto-fetch for regular employees on component mount
+  // Auto-fetch for regular employees on mount
   useEffect(() => {
     if (!canSearch && userInfo._id) {
-      fetchEmployeeData(null); // Fetch own data
+      fetchEmployeeData(''); // Empty string triggers fetching their own data via backend
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --- Handlers ---
-
   const fetchEmployeeData = async (queryId) => {
     setLoading(true);
     setActiveEmployee(null);
 
     try {
-      let targetUserId = null;
-      let targetUserName = '';
-      let targetUserRole = '';
-      let targetUserEmpId = '';
+      const res = await fetch(`${API_BASE_URL}/documents/fetch-records`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}` 
+        },
+        body: JSON.stringify({ queryId: queryId || '' })
+      });
+      
+      const data = await res.json();
 
-      if (!canSearch) {
-        // REGULAR EMPLOYEE: Fetch their own profile from localStorage info
-        targetUserId = userInfo._id;
-        targetUserName = userInfo.name;
-        targetUserRole = userInfo.role;
-        targetUserEmpId = userInfo.employeeId;
-      } else {
-        // ADMIN/MANAGEMENT: Search in user list
-        const userRes = await fetch(`${API_BASE_URL}/auth/users`, {
-          headers: { Authorization: `Bearer ${userInfo.token}` }
-        });
-        const usersList = await userRes.json();
-        
-        const foundUser = usersList.find(u => 
-          u.employeeId.toLowerCase() === queryId.trim().toLowerCase()
-        );
-
-        if (!foundUser) {
-          showPopup('error', 'No employee found with this ID.');
-          setLoading(false);
-          return;
-        }
-
-        targetUserId = foundUser._id;
-        targetUserName = foundUser.name;
-        targetUserRole = foundUser.role;
-        targetUserEmpId = foundUser.employeeId;
+      if (!res.ok) {
+        showPopup('error', data.message || 'No employee found with this ID.');
+        setLoading(false);
+        return;
       }
 
-      // Fetch documents for the resolved user ID
-      const docsRes = await fetch(`${API_BASE_URL}/documents/${targetUserId}`, {
-        headers: { Authorization: `Bearer ${userInfo.token}` }
-      });
-      const docsData = await docsRes.json();
+      // Backend now nicely packages user details and documents together
+      const { user, documents } = data;
 
       const mappedDocs = {};
-      if (Array.isArray(docsData)) {
-        docsData.forEach(doc => {
+      if (Array.isArray(documents)) {
+        documents.forEach(doc => {
           mappedDocs[doc.documentType] = {
             _id: doc._id,
             name: doc.fileUrl.split('/').pop().substring(0, 20) + '...', 
@@ -106,10 +83,10 @@ export default function EmployeeDocuments() {
       }
 
       setActiveEmployee({
-        _id: targetUserId,
-        id: targetUserEmpId,
-        name: targetUserName,
-        role: targetUserRole,
+        _id: user._id,
+        id: user.employeeId,
+        name: user.name,
+        role: user.role,
         documents: mappedDocs 
       });
 
@@ -123,10 +100,10 @@ export default function EmployeeDocuments() {
 
   const handleSearchClick = () => {
     if (!searchInput.trim()) {
-      showPopup('error', 'Please enter an Employee ID');
+      showPopup('error', 'Please enter an exact Employee ID');
       return;
     }
-    fetchEmployeeData(searchInput);
+    fetchEmployeeData(searchInput.trim());
   };
 
   const handleFileUpload = async (docKey, file) => {
@@ -235,9 +212,9 @@ export default function EmployeeDocuments() {
           </div>
           
           {/* Access Badge */}
-          <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] sm:text-xs font-bold border ${canUploadDelete ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+          <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-[10px] sm:text-xs font-bold border ${canUploadDelete ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : canSearch ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
             <Lock size={12} />
-            {canUploadDelete ? 'FULL ACCESS' : 'VIEW ONLY'}
+            {canUploadDelete ? 'FULL ACCESS' : canSearch ? 'VIEWING ACCESS' : 'PERSONAL VAULT'}
           </div>
         </div>
         
@@ -250,11 +227,11 @@ export default function EmployeeDocuments() {
                 <Search className="absolute left-3 sm:left-4 top-3 sm:top-3.5 text-slate-400" size={18} />
                 <input 
                   type="text" 
-                  placeholder="Search Employee ID to view records (e.g. 101/03/RAPTOR/26)" 
+                  placeholder="Search Exact Employee ID (e.g. 101/03/RAPTOR/26)" 
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
-                  className="pl-10 sm:pl-12 block w-full px-4 py-2.5 sm:py-3 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#084e8d]/20 focus:border-[#084e8d] transition-all outline-none shadow-sm"
+                  className="pl-10 sm:pl-12 block w-full px-4 py-2.5 sm:py-3 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#084e8d]/20 focus:border-[#084e8d] transition-all outline-none shadow-sm uppercase"
                 />
               </div>
               <button 
@@ -344,7 +321,6 @@ export default function EmployeeDocuments() {
                             </div>
                           </div>
                         ) : (
-                          // If not uploaded, check if user has upload rights
                           canUploadDelete ? (
                             <label className="cursor-pointer bg-white hover:bg-[#084e8d]/5 hover:border-[#084e8d]/30 hover:text-[#084e8d] border border-dashed border-slate-300 rounded-lg flex justify-center py-2.5 sm:py-3 transition-colors group mt-auto">
                               <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-[#084e8d] flex items-center gap-2">
