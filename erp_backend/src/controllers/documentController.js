@@ -61,7 +61,7 @@ const fetchEmployeeRecords = async (req, res) => {
 
     // RBAC Security Check
     const isSuperAdmin = currentUser.role === 'Super Admin';
-    const isManagement = ['Founder and Director', 'Founder', 'Manager', 'Receptionist', 'Reception'].includes(currentUser.role);
+    const isManagement = ['Founder and Director', 'Founder', 'Manager'].includes(currentUser.role);
     const isRequestingOwnDocs = currentUser._id.toString() === targetUser._id.toString();
 
     // Block logic
