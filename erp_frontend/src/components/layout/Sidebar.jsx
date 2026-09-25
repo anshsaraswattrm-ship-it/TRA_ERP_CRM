@@ -65,7 +65,7 @@ export default function Sidebar({ closeMobile }) {
       name: 'Master Targets', 
       path: '/targets', 
       icon: Target, 
-      roles: ['Super Admin', 'Founder and Director'] 
+      roles: ['Super Admin', 'Founder and Director', 'Manager'] 
     },
     { 
       name: 'Employee Documents', 
