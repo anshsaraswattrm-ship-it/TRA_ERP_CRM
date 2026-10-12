@@ -6,7 +6,6 @@ const User = require('./src/models/User');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 
-// ✅ Document Routes Import (Path updated according to your structure)
 const documentRoutes = require('./src/routes/documentRoutes');
 
 const startAttendanceCron = require('./src/utils/cronJobs'); 
